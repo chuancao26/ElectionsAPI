@@ -28,6 +28,4 @@ public class VotingEvent
     @OneToMany(mappedBy = "votingEvent", cascade = CascadeType.ALL)
     @JsonBackReference
     private List<Option> options;
-    
-    
 }
