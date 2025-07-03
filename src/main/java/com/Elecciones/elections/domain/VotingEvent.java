@@ -21,6 +21,7 @@ public class VotingEvent
     private String description;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime createdAt = LocalDateTime.now();
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
     @JsonBackReference
