@@ -1,5 +1,6 @@
 package com.Elecciones.elections.domain;
 
+import com.Elecciones.elections.dto.OptionInput;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,4 +22,8 @@ public class Option
     @ManyToOne
     @JoinColumn(name = "voting_event_id")
     private VotingEvent votingEvent;
+    public Option(OptionInput optionInput)
+    {
+        this.label = optionInput.label();
+    }
 }
