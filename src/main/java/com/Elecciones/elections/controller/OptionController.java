@@ -57,6 +57,15 @@ public class OptionController
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
     
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteOption(@PathVariable Long id) {
+        try {
+            this.optionService.deleteOption(id);
+        } catch (RuntimeException e) {
+            log.error("Error deleting option", e);
+        }
+    }
     @PatchMapping("/{id}")
     public ResponseEntity<?> patchOption(
             @PathVariable Long id,
@@ -86,13 +95,4 @@ public class OptionController
         }
     }
     
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteOption(@PathVariable Long id) {
-        try {
-            this.optionService.deleteOption(id);
-        } catch (RuntimeException e) {
-            log.error("Error deleting option", e);
-        }
-    }
 }

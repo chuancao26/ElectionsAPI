@@ -23,8 +23,10 @@ public class UserApp
     @Column(unique = true, nullable = false)
     private String email;
     private String photo;
+    
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime modifiedAt = LocalDateTime.now();
+    
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<VotingEvent> votingEvents = new ArrayList<>();
