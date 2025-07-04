@@ -31,6 +31,10 @@ public class UserApp
     @JsonManagedReference
     private List<VotingEvent> votingEvents = new ArrayList<>();
     
+    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Participant> eventParticipant= new ArrayList<>();
+    
     public UserApp(UserInput userInput)
     {
         this.setId(userInput.id());

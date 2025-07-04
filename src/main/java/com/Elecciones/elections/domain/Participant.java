@@ -1,9 +1,8 @@
 package com.Elecciones.elections.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,12 +14,17 @@ import lombok.NoArgsConstructor;
 public class Participant
 {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Status status;
+    
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private UserApp user;
+    @JsonBackReference
+    private UserApp participant;
+    
     @ManyToOne
     @JoinColumn(name = "voting_event_id")
+    @JsonBackReference
     private VotingEvent votingEvent;
 }

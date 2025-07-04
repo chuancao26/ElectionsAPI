@@ -19,9 +19,11 @@ public class Option
     private Long id;
     private String label;
     private LocalDateTime createdAt = LocalDateTime.now();
+    
     @ManyToOne
     @JoinColumn(name = "voting_event_id")
     private VotingEvent votingEvent;
+    
     public Option(OptionInput optionInput)
     {
         this.label = optionInput.label();

@@ -16,9 +16,11 @@ public class Vote
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
     @ManyToOne
     @JoinColumn(name = "voter_id")
     private UserApp voter;
+    
     @ManyToOne
     @JoinColumn(name = "option_id")
     private Option option;

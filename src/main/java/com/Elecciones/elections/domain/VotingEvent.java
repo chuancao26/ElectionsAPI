@@ -25,16 +25,20 @@ public class VotingEvent
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private LocalDateTime createdAt = LocalDateTime.now();
+    
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
     @JsonBackReference
     private UserApp creator;
+    
     @OneToMany(mappedBy = "votingEvent", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Option> options = new ArrayList<>();
+    
     @OneToMany(mappedBy = "votingEvent", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Participant> participants = new ArrayList<>();
+    
     public VotingEvent(VotingEventInput votingEventInput)
     {
         this.title = votingEventInput.title();
