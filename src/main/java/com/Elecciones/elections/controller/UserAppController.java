@@ -1,6 +1,7 @@
 package com.Elecciones.elections.controller;
 
 import com.Elecciones.elections.domain.UserApp;
+import com.Elecciones.elections.dto.UserInput;
 import com.Elecciones.elections.service.UserAppService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,16 +20,17 @@ public class UserAppController
         return ResponseEntity.ok(this.userAppService.getAllUsers());
     }
     
-    @GetMapping("/{id}")
-    public ResponseEntity<UserApp> getUserById(@PathVariable String id) {
-        UserApp user = this.userAppService.getUserById(id);
-        return ResponseEntity.ok(user);
+    @PostMapping
+    public ResponseEntity<UserApp> createUser(@RequestBody UserInput userInput) {
+        UserApp created = this.userAppService.createUser(userInput);
+        return ResponseEntity.ok(created);
     }
     
-    @PostMapping
-    public ResponseEntity<UserApp> createUser(@RequestBody UserApp userApp) {
-        UserApp created = this.userAppService.createUser(userApp);
-        return ResponseEntity.ok(created);
+    @GetMapping("/{id}")
+    public ResponseEntity<UserApp> getUserById(@PathVariable String id)
+    {
+        UserApp user = this.userAppService.getUserById(id);
+        return ResponseEntity.ok(user);
     }
     
     @PatchMapping("/{id}")

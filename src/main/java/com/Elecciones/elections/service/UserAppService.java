@@ -1,12 +1,11 @@
 package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.domain.UserApp;
+import com.Elecciones.elections.dto.UserInput;
 import com.Elecciones.elections.repository.UserAppRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,39 +18,28 @@ public class UserAppService
     public UserAppService(UserAppRepository userAppRepository) {
         this.userAppRepository = userAppRepository;
     }
-
+    
+    public UserApp createUser(UserInput userInput)
+    {
+        this.log.info("Create user with email: {}", userInput.email());
+        UserApp userApp = new UserApp(userInput);
+        return this.userAppRepository.save(userApp);
+    }
+    
     public Iterable<UserApp> getAllUsers() {
         this.log.info("Get all users");
         return this.userAppRepository.findAll();
     }
     
-    private UserApp existUserById(String id) {
-        UserApp user = this.userAppRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new RuntimeException("User does not exist with ID: " + id);
-        }
+    public UserApp getUserById(String id) {
+        UserApp user = this.userAppRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("User does not exist with ID: " + id)
+        );
         return user;
     }
     
-    public UserApp getUserById(String id) {
-        return this.existUserById(id);
-    }
-    
-    public UserApp createUser(UserApp userApp) {
-        this.log.info("Create user with email: {}", userApp.getEmail());
-        
-        if (this.userAppRepository.findByEmail(userApp.getEmail()).isPresent()) {
-            throw new RuntimeException("User already exists with email: " + userApp.getEmail());
-        }
-        
-        userApp.setCreatedAt(LocalDateTime.now());
-        userApp.setModifiedAt(LocalDateTime.now());
-        
-        return this.userAppRepository.save(userApp);
-    }
-    
     public UserApp patchUser(UserApp patch, String id) {
-        UserApp user = this.existUserById(id);
+        UserApp user = this.getUserById(id);
         
         if (patch.getName() != null) {
             user.setName(patch.getName());
@@ -73,7 +61,7 @@ public class UserAppService
     }
     
     public UserApp putUser(String id, UserApp putUser) {
-        UserApp user = this.existUserById(id);
+        UserApp user = this.getUserById(id);
         
         if (!putUser.getId().equals(user.getId())) {
             throw new IllegalArgumentException("ID not valid for update");
@@ -92,7 +80,7 @@ public class UserAppService
     }
     
     public void deleteUser(String id) {
-        UserApp user = this.existUserById(id);
+        UserApp user = this.getUserById(id);
         this.userAppRepository.delete(user);
         this.log.info("Deleted user with id {}", id);
     }

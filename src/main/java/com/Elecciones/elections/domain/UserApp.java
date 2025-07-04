@@ -1,5 +1,6 @@
 package com.Elecciones.elections.domain;
 
+import com.Elecciones.elections.dto.UserInput;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -25,5 +27,13 @@ public class UserApp
     private LocalDateTime modifiedAt = LocalDateTime.now();
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private List<VotingEvent> votingEvents;
+    private List<VotingEvent> votingEvents = new ArrayList<>();
+    
+    public UserApp(UserInput userInput)
+    {
+        this.setId(userInput.id());
+        this.setName(userInput.name());
+        this.setEmail(userInput.email());
+        this.setPhoto(userInput.photo());
+    }
 }
