@@ -1,5 +1,6 @@
 package com.Elecciones.elections.domain;
 
+import com.Elecciones.elections.dto.VotingEventInput;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -28,5 +30,12 @@ public class VotingEvent
     private UserApp creator;
     @OneToMany(mappedBy = "votingEvent", cascade = CascadeType.ALL)
     @JsonBackReference
-    private List<Option> options;
+    private List<Option> options = new ArrayList<>();
+    public VotingEvent(VotingEventInput votingEventInput)
+    {
+        this.title = votingEventInput.title();
+        this.description = votingEventInput.description();
+        this.startTime = votingEventInput.startTime();
+        this.endTime = votingEventInput.endTime();
+    }
 }

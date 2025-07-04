@@ -9,5 +9,8 @@ spring:
     driver-class-name: org.postgresql.Driver
   application:
     name: elections
+#logging:
+#  level:
+#    root: DEBUG
 server:
   port: 8001

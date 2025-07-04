@@ -1,5 +1,6 @@
 package com.Elecciones.elections.service;
 
+import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.dto.UserInput;
 import com.Elecciones.elections.repository.UserAppRepository;
@@ -33,7 +34,7 @@ public class UserAppService
     
     public UserApp getUserById(String id) {
         UserApp user = this.userAppRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("User does not exist with ID: " + id)
+                () -> new ConflictException("User does not exist with ID: " + id)
         );
         return user;
     }

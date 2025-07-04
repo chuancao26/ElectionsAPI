@@ -1,65 +1,72 @@
 package com.Elecciones.elections.service;
 
+import com.Elecciones.elections.Exception.BadRequestException;
+import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.domain.VotingEvent;
+import com.Elecciones.elections.dto.VotingEventInput;
 import com.Elecciones.elections.repository.UserAppRepository;
 import com.Elecciones.elections.repository.VotingEventRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class VotingEventService
 {
     private final VotingEventRepository votingEventRepository;
-    private final UserAppRepository userAppRepository;
+    private final UserAppService userAppService;
     private final Logger log = LoggerFactory.getLogger(VotingEventService.class);
+    private final ServerProperties serverProperties;
     
-    public VotingEventService(VotingEventRepository votingEventRepository, UserAppRepository userAppRepository) {
+    public VotingEventService(VotingEventRepository votingEventRepository, UserAppService userAppService, ServerProperties serverProperties) {
         this.votingEventRepository = votingEventRepository;
-        this.userAppRepository = userAppRepository;
+        this.userAppService = userAppService;
+        this.serverProperties = serverProperties;
     }
     
+    
     public Iterable<VotingEvent> getAllVotingEvents() {
-        this.log.info("Get all voting events");
         return this.votingEventRepository.findAll();
     }
     
-    private VotingEvent existVotingEventById(String id) {
-        VotingEvent event = this.votingEventRepository.findById(id).orElse(null);
-        if (event == null) {
-            throw new RuntimeException("VotingEvent does not exist with ID: " + id);
-        }
+    public VotingEvent getVotingEventById(String id) {
+        VotingEvent event = this.votingEventRepository.findById(id).orElseThrow(
+                () -> new ConflictException("VotingEvent does not exist with ID: " + id)
+        );
         return event;
     }
-    
-    public VotingEvent getVotingEventById(String id) {
-        return this.existVotingEventById(id);
+    public List<VotingEvent> getVotingEventsByCreator(String creatorId)
+    {
+        UserApp creator = userAppService.getUserById(creatorId);
+        
+        List<VotingEvent> votingEvents = this.votingEventRepository.findByCreator(creator);
+        return votingEvents;
     }
-    
-    public VotingEvent createVotingEvent(VotingEvent votingEvent, String creatorId) {
-        this.log.info("Create voting event with title: {}", votingEvent.getTitle());
+    public VotingEvent createVotingEvent(VotingEventInput votingEventInput, String creatorId) {
         
-        if (votingEvent.getStartTime() != null && votingEvent.getEndTime() != null &&
-                votingEvent.getStartTime().isAfter(votingEvent.getEndTime())) {
-            throw new IllegalArgumentException("Start time cannot be after end time");
+        if (votingEventInput.startTime() != null && votingEventInput.endTime() != null &&
+                votingEventInput.startTime().isAfter(votingEventInput.endTime())) {
+            throw new BadRequestException("Start time cannot be after end time");
         }
-        
-        UserApp creator = userAppRepository.findById(creatorId)
-                .orElseThrow(() -> new RuntimeException("Creator user not found with ID: " + creatorId));
+        UserApp creator = userAppService.getUserById(creatorId);
+        VotingEvent votingEvent = new VotingEvent(votingEventInput);
         
         votingEvent.setId(java.util.UUID.randomUUID().toString());
-        votingEvent.setCreatedAt(LocalDateTime.now());
         votingEvent.setCreator(creator);
         
         return this.votingEventRepository.save(votingEvent);
     }
     
     public VotingEvent patchVotingEvent(String id, VotingEvent patch) {
-        VotingEvent event = this.existVotingEventById(id);
+        VotingEvent event = this.getVotingEventById(id);
         
         if (patch.getTitle() != null) {
             event.setTitle(patch.getTitle());
@@ -83,10 +90,9 @@ public class VotingEventService
     }
     
     public VotingEvent putVotingEvent(String id, VotingEvent putVotingEvent, String creatorId) {
-        VotingEvent event = this.existVotingEventById(id);
+        VotingEvent event = this.getVotingEventById(id);
         
-        UserApp creator = userAppRepository.findById(creatorId)
-                .orElseThrow(() -> new RuntimeException("Creator user not found with ID: " + creatorId));
+        UserApp creator = userAppService.getUserById(creatorId);
         
         putVotingEvent.setId(id);
         putVotingEvent.setCreatedAt(event.getCreatedAt());
@@ -101,7 +107,7 @@ public class VotingEventService
     }
     
     public void deleteVotingEvent(String id) {
-        VotingEvent event = this.existVotingEventById(id);
+        VotingEvent event = this.getVotingEventById(id);
         this.votingEventRepository.delete(event);
         this.log.info("Deleted voting event with id {}", id);
     }

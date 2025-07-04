@@ -33,6 +33,15 @@ public class UserAppController
         return ResponseEntity.ok(user);
     }
     
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+        this.userAppService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+    
+    
+    /// //////////////////////////////////////////////////
+    
     @PatchMapping("/{id}")
     public ResponseEntity<UserApp> patchUser(
             @PathVariable String id,
@@ -50,12 +59,6 @@ public class UserAppController
         putUser.setId(id);
         UserApp updated = this.userAppService.putUser(id, putUser);
         return ResponseEntity.ok(updated);
-    }
-    
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-        this.userAppService.deleteUser(id);
-        return ResponseEntity.noContent().build();
     }
     
     @DeleteMapping("/email/{email}")

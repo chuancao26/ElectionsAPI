@@ -15,13 +15,12 @@ public class OptionService
 {
     
     private final OptionRepository optionRepository;
-    private final VotingEventRepository votingEventRepository;
-    
+    private final VotingEventService votingEventService;
     private final Logger log = LoggerFactory.getLogger(OptionService.class);
     
-    public OptionService(OptionRepository optionRepository, VotingEventRepository votingEventRepository) {
+    public OptionService(OptionRepository optionRepository, VotingEventService votingEventService) {
         this.optionRepository = optionRepository;
-        this.votingEventRepository = votingEventRepository;
+        this.votingEventService = votingEventService;
     }
     
     public Iterable<Option> getAllOptions() {
@@ -44,11 +43,9 @@ public class OptionService
     public Option createOption(Option option, String votingEventId) {
         this.log.info("Create option with label: {}", option.getLabel());
         
-        VotingEvent votingEvent = this.votingEventRepository.findById(votingEventId)
-                .orElseThrow(() -> new RuntimeException("Voting event not found with ID: " + votingEventId));
+        VotingEvent votingEvent = this.votingEventService.getVotingEventById(votingEventId);
         
         option.setVotingEvent(votingEvent);
-        
         return this.optionRepository.save(option);
     }
     
@@ -64,8 +61,7 @@ public class OptionService
     public Option putOption(Long id, Option putOption, String votingEventId) {
         Option option = this.existOptionById(id);
         
-        VotingEvent votingEvent = this.votingEventRepository.findById(votingEventId)
-                .orElseThrow(() -> new RuntimeException("Voting event not found with ID: " + votingEventId));
+        VotingEvent votingEvent = this.votingEventService.getVotingEventById(votingEventId);
         
         putOption.setId(id);
         putOption.setCreatedAt(option.getCreatedAt());

@@ -1,11 +1,15 @@
 package com.Elecciones.elections.controller;
 
 import com.Elecciones.elections.domain.VotingEvent;
+import com.Elecciones.elections.dto.VotingEventInput;
 import com.Elecciones.elections.service.VotingEventService;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,15 +24,20 @@ public class VotingEventController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getVotingEvent(@PathVariable("id") String id) {
-        try {
-            VotingEvent event = this.votingEventService.getVotingEventById(id);
-            return new ResponseEntity<>(event, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            log.error("Error getting voting event", e);
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
-        }
+    public ResponseEntity<?> getVotingEvent(@PathVariable("id") String id)
+    {
+        log.info("captured");
+        VotingEvent event = this.votingEventService.getVotingEventById(id);
+        return new ResponseEntity<>(event, HttpStatus.OK);
     }
+    
+    @GetMapping ("/creator/{creatorId}")
+    public ResponseEntity<?> getVotingEventByCreator(@PathVariable("creatorId") String creatorId)
+    {
+        List<VotingEvent> events = this.votingEventService.getVotingEventsByCreator(creatorId);
+        return new ResponseEntity<>(events, HttpStatus.OK);
+    }
+    
     
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -40,15 +49,10 @@ public class VotingEventController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> createVotingEvent(
             @PathVariable String creatorId,
-            @RequestBody VotingEvent votingEvent
-    ) {
-        try {
-            VotingEvent created = this.votingEventService.createVotingEvent(votingEvent, creatorId);
-            return new ResponseEntity<>(created, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            log.error("Error creating voting event", e);
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
-        }
+            @RequestBody VotingEventInput votingEventInput)
+    {
+        VotingEvent created = this.votingEventService.createVotingEvent(votingEventInput, creatorId);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
     
     @PatchMapping("/{id}")
