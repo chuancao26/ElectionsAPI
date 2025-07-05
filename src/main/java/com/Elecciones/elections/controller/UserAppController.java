@@ -2,6 +2,7 @@ package com.Elecciones.elections.controller;
 
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.dto.UserInput;
+import com.Elecciones.elections.dto.UserOut;
 import com.Elecciones.elections.service.UserAppService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,25 +17,25 @@ public class UserAppController
         this.userAppService = userAppService;
     }
     @GetMapping
-    public ResponseEntity<Iterable<UserApp>> getAllUsers() {
+    public ResponseEntity<?> getAllUsers() {
         return ResponseEntity.ok(this.userAppService.getAllUsers());
     }
     
     @PostMapping
-    public ResponseEntity<UserApp> createUser(@RequestBody UserInput userInput) {
-        UserApp created = this.userAppService.createUser(userInput);
+    public ResponseEntity<?> createUser(@RequestBody UserInput userInput) {
+        UserOut created = this.userAppService.createUser(userInput);
         return ResponseEntity.ok(created);
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<UserApp> getUserById(@PathVariable String id)
+    public ResponseEntity<?> getUserById(@PathVariable String id)
     {
-        UserApp user = this.userAppService.getUserById(id);
+        UserOut user = this.userAppService.getUserOutById(id);
         return ResponseEntity.ok(user);
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+    public ResponseEntity<?> deleteUser(@PathVariable String id) {
         this.userAppService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }

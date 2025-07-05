@@ -3,10 +3,13 @@ package com.Elecciones.elections.service;
 import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.dto.UserInput;
+import com.Elecciones.elections.dto.UserOut;
 import com.Elecciones.elections.repository.UserAppRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,20 +19,40 @@ public class UserAppService
     private UserAppRepository userAppRepository;
     private final Logger log = LoggerFactory.getLogger(UserAppService.class);
     
+    private UserOut makeUserOut(UserApp userApp)
+    {
+        return new UserOut(userApp.getId(), userApp.getName(), userApp.getEmail());
+    }
+    private List<UserOut> listUserOut(List<UserApp> userApps)
+    {
+        return userApps.stream()
+                .map(
+                        user -> new UserOut(user.getId(), user.getName(), user.getEmail())
+                )
+                .toList();
+    }
     public UserAppService(UserAppRepository userAppRepository) {
         this.userAppRepository = userAppRepository;
     }
     
-    public UserApp createUser(UserInput userInput)
+    public UserOut createUser(UserInput userInput)
     {
         this.log.info("Create user with email: {}", userInput.email());
         UserApp userApp = new UserApp(userInput);
-        return this.userAppRepository.save(userApp);
+        return this.makeUserOut(userApp);
     }
     
-    public Iterable<UserApp> getAllUsers() {
+    public List<UserOut> getAllUsers() {
         this.log.info("Get all users");
-        return this.userAppRepository.findAll();
+        List<UserApp> userApps = this.userAppRepository.findAll();
+        return listUserOut(userApps);
+    }
+    
+    public UserOut getUserOutById(String id) {
+        UserApp user = this.userAppRepository.findById(id).orElseThrow(
+                () -> new ConflictException("User does not exist with ID: " + id)
+        );
+        return new UserOut(user.getId(), user.getName(), user.getEmail());
     }
     
     public UserApp getUserById(String id) {
