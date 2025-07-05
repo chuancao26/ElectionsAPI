@@ -2,6 +2,7 @@ package com.Elecciones.elections.controller;
 
 import com.Elecciones.elections.domain.VotingEvent;
 import com.Elecciones.elections.dto.VotingEventInput;
+import com.Elecciones.elections.dto.VotingEventOut;
 import com.Elecciones.elections.service.VotingEventService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -32,14 +33,14 @@ public class VotingEventController {
     @GetMapping ("/creator/{creatorId}")
     public ResponseEntity<?> getVotingEventByCreator(@PathVariable("creatorId") String creatorId)
     {
-        List<VotingEvent> events = this.votingEventService.getVotingEventsByCreator(creatorId);
+        List<VotingEventOut> events = this.votingEventService.getVotingEventsByCreator(creatorId);
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
     
     
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Iterable<VotingEvent> getVotingEvents() {
+    public List<VotingEventOut> getVotingEvents() {
         return this.votingEventService.getAllVotingEvents();
     }
     
@@ -49,7 +50,7 @@ public class VotingEventController {
             @PathVariable String creatorId,
             @RequestBody VotingEventInput votingEventInput)
     {
-        VotingEvent created = this.votingEventService.createVotingEvent(votingEventInput, creatorId);
+        VotingEventOut created = this.votingEventService.createVotingEvent(votingEventInput, creatorId);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
     

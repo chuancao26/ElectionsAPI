@@ -9,4 +9,5 @@ import java.util.List;
 public interface VotingEventRepository extends JpaRepository<VotingEvent, String>
 {
     List<VotingEvent> findByCreator(UserApp creator);
+    List<VotingEvent> findAll();
 }

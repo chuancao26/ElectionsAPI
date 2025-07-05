@@ -5,7 +5,7 @@ import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.domain.VotingEvent;
 import com.Elecciones.elections.dto.VotingEventInput;
-import com.Elecciones.elections.repository.UserAppRepository;
+import com.Elecciones.elections.dto.VotingEventOut;
 import com.Elecciones.elections.repository.VotingEventRepository;
 
 import org.slf4j.Logger;
@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 public class VotingEventService
@@ -32,9 +29,36 @@ public class VotingEventService
         this.serverProperties = serverProperties;
     }
     
+    private VotingEventOut makeVotingEventOut(VotingEvent votingEvent)
+    {
+        return new VotingEventOut(
+                votingEvent.getId(),
+                votingEvent.getTitle(),
+                votingEvent.getDescription(),
+                votingEvent.getStartTime(),
+                votingEvent.getEndTime(),
+                votingEvent.getCreator().getId(),
+                votingEvent.getCreator().getName()
+        );
+    }
+    private List<VotingEventOut> listVotingEventOut(List<VotingEvent> votingEvents)
+    {
+        return votingEvents.stream()
+                .map(votingEvent -> new VotingEventOut(
+                        votingEvent.getId(),
+                        votingEvent.getTitle(),
+                        votingEvent.getDescription(),
+                        votingEvent.getStartTime(),
+                        votingEvent.getEndTime(),
+                        votingEvent.getCreator().getId(),
+                        votingEvent.getCreator().getName()
+                ))
+                .toList();
+    }
     
-    public Iterable<VotingEvent> getAllVotingEvents() {
-        return this.votingEventRepository.findAll();
+    public List<VotingEventOut> getAllVotingEvents()
+    {
+        return listVotingEventOut(this.votingEventRepository.findAll());
     }
     
     public VotingEvent getVotingEventById(String id) {
@@ -43,14 +67,20 @@ public class VotingEventService
         );
         return event;
     }
-    public List<VotingEvent> getVotingEventsByCreator(String creatorId)
+    public VotingEventOut getVotingEventOutById(String id)
+    {
+        VotingEvent event = getVotingEventById(id);
+        return makeVotingEventOut(event);
+    }
+    public List<VotingEventOut> getVotingEventsByCreator(String creatorId)
     {
         UserApp creator = userAppService.getUserById(creatorId);
         
         List<VotingEvent> votingEvents = this.votingEventRepository.findByCreator(creator);
-        return votingEvents;
+        
+        return listVotingEventOut(votingEvents);
     }
-    public VotingEvent createVotingEvent(VotingEventInput votingEventInput, String creatorId) {
+    public VotingEventOut createVotingEvent(VotingEventInput votingEventInput, String creatorId) {
         
         if (votingEventInput.startTime() != null && votingEventInput.endTime() != null &&
                 votingEventInput.startTime().isAfter(votingEventInput.endTime())) {
@@ -62,8 +92,11 @@ public class VotingEventService
         votingEvent.setId(java.util.UUID.randomUUID().toString());
         votingEvent.setCreator(creator);
         
-        return this.votingEventRepository.save(votingEvent);
+        return makeVotingEventOut(this.votingEventRepository.save(votingEvent));
     }
+    
+    
+    
     
     public VotingEvent patchVotingEvent(String id, VotingEvent patch) {
         VotingEvent event = this.getVotingEventById(id);
