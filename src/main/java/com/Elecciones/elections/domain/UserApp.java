@@ -31,7 +31,7 @@ public class UserApp
     @JsonManagedReference
     private List<VotingEvent> votingEvents = new ArrayList<>();
     
-    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Participant> eventParticipant= new ArrayList<>();
     

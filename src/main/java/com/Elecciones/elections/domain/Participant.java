@@ -21,7 +21,7 @@ public class Participant
     @ManyToOne
     @JoinColumn(name = "user_id")
     @JsonBackReference
-    private UserApp participant;
+    private UserApp user;
     
     @ManyToOne
     @JoinColumn(name = "voting_event_id")

@@ -5,6 +5,7 @@ import com.Elecciones.elections.domain.Participant;
 import com.Elecciones.elections.domain.Status;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.domain.VotingEvent;
+import com.Elecciones.elections.dto.ParticipantInput;
 import com.Elecciones.elections.repository.ParticipantRepository;
 
 import org.springframework.stereotype.Service;
@@ -42,34 +43,46 @@ public class ParticipantService
     
     public Optional<Participant> getExistedParticipantByIdAndVotingEvent(String votingEventId, String userId)
     {
-        return participantRepository.findByUserIdAndVotingEventId(userId, votingEventId);
+        VotingEvent votingEvent = votingEventService.getVotingEventById(votingEventId);
+        UserApp userApp = userAppService.getUserById(userId);
+        return participantRepository.findByUserAndVotingEvent(userApp, votingEvent);
     }
     
-    public Participant createParticipant(String votingEventId, String userId)
+    public Participant createParticipant(ParticipantInput participant)
     {
-        Optional<Participant> existedParticipant = getExistedParticipantByIdAndVotingEvent(votingEventId, userId);
+        
+        Optional<Participant> existedParticipant = getExistedParticipantByIdAndVotingEvent(participant.eventId(), participant.userId());
         if (existedParticipant.isPresent())
         {
             return existedParticipant.get();
         }
         
-        UserApp userApp = userAppService.getUserById(userId);
-        VotingEvent votingEvent = votingEventService.getVotingEventById(votingEventId);
+        UserApp userApp = userAppService.getUserById(participant.userId());
+        VotingEvent votingEvent = votingEventService.getVotingEventById(participant.eventId());
         
-        Participant participant = new Participant();
-        participant.setVotingEvent(votingEvent);
-        participant.setParticipant(userApp);
-        participant.setStatus(Status.VALID);
+        Participant newParticipant = new Participant();
+        newParticipant.setVotingEvent(votingEvent);
+        newParticipant.setUser(userApp);
+        newParticipant.setStatus(Status.VALID);
         
-        participantRepository.save(participant);
-        return participant;
+        participantRepository.save(newParticipant);
+        return newParticipant;
     }
     
-    public Participant banParticipant(Participant participant)
+    public Participant banParticipant(Long id)
     {
-        Participant currentParticipant = this.getParticipantById(participant.getId());
+        Participant currentParticipant = this.getParticipantById(id);
         currentParticipant.setStatus(Status.BANNED);
         participantRepository.save(currentParticipant);
         return currentParticipant;
     }
+    
+    public Participant validParticipant(Long id)
+    {
+        Participant currentParticipant = this.getParticipantById(id);
+        currentParticipant.setStatus(Status.VALID);
+        participantRepository.save(currentParticipant);
+        return currentParticipant;
+    }
+    
 }
