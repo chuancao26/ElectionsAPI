@@ -39,6 +39,7 @@ public class UserAppService
     {
         this.log.info("Create user with email: {}", userInput.email());
         UserApp userApp = new UserApp(userInput);
+        userAppRepository.save(userApp);
         return this.makeUserOut(userApp);
     }
     

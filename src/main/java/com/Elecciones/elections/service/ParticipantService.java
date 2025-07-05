@@ -6,6 +6,7 @@ import com.Elecciones.elections.domain.Status;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.domain.VotingEvent;
 import com.Elecciones.elections.dto.ParticipantInput;
+import com.Elecciones.elections.dto.ParticipantOut;
 import com.Elecciones.elections.repository.ParticipantRepository;
 
 import org.springframework.stereotype.Service;
@@ -26,19 +27,49 @@ public class ParticipantService
         this.userAppService = userAppService;
         this.votingEventService = votingEventService;
     }
-    public Participant getParticipantById(Long id)
+    private ParticipantOut makeParticipantOut(Participant participant)
+    {
+        return new ParticipantOut(
+                participant.getId(),
+                participant.getStatus(),
+                participant.getUser().getId(),
+                participant.getUser().getName(),
+                participant.getVotingEvent().getId(),
+                participant.getVotingEvent().getTitle()
+        );
+    }
+    private List<ParticipantOut> listParticipantOut(List<Participant> participants)
+    {
+        return participants.stream()
+                .map(
+                        participant -> new ParticipantOut(
+                                participant.getId(),
+                                participant.getStatus(),
+                                participant.getUser().getId(),
+                                participant.getUser().getName(),
+                                participant.getVotingEvent().getId(),
+                                participant.getVotingEvent().getTitle()
+                        ))
+                .toList();
+    }
+    private Participant getParticipantById(Long id)
     {
         Participant participant = participantRepository.findById(id).orElseThrow(
                 () -> new BadRequestException("There is no participant with id: " + id)
         );
         return participant;
     }
+    public ParticipantOut getParticipantOutById(Long id)
+    {
+        Participant participant = getParticipantById(id);
+        return makeParticipantOut(participant);
+    }
     
-    public List<Participant> getParticipantsByEventId(String eventId)
+    public List<ParticipantOut> getParticipantsByEventId(String eventId)
     {
         VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
         List<Participant> participants = participantRepository.findByVotingEvent(votingEvent);
-        return participants;
+        return listParticipantOut(participants);
     }
     
     public Optional<Participant> getExistedParticipantByIdAndVotingEvent(String votingEventId, String userId)
@@ -48,13 +79,13 @@ public class ParticipantService
         return participantRepository.findByUserAndVotingEvent(userApp, votingEvent);
     }
     
-    public Participant createParticipant(ParticipantInput participant)
+    public ParticipantOut createParticipant(ParticipantInput participant)
     {
         
         Optional<Participant> existedParticipant = getExistedParticipantByIdAndVotingEvent(participant.eventId(), participant.userId());
         if (existedParticipant.isPresent())
         {
-            return existedParticipant.get();
+            return makeParticipantOut(existedParticipant.get());
         }
         
         UserApp userApp = userAppService.getUserById(participant.userId());
@@ -66,23 +97,23 @@ public class ParticipantService
         newParticipant.setStatus(Status.VALID);
         
         participantRepository.save(newParticipant);
-        return newParticipant;
+        return makeParticipantOut(newParticipant);
     }
     
-    public Participant banParticipant(Long id)
+    public ParticipantOut banParticipant(Long id)
     {
         Participant currentParticipant = this.getParticipantById(id);
         currentParticipant.setStatus(Status.BANNED);
         participantRepository.save(currentParticipant);
-        return currentParticipant;
+        return makeParticipantOut(currentParticipant);
     }
     
-    public Participant validParticipant(Long id)
+    public ParticipantOut validParticipant(Long id)
     {
         Participant currentParticipant = this.getParticipantById(id);
         currentParticipant.setStatus(Status.VALID);
         participantRepository.save(currentParticipant);
-        return currentParticipant;
+        return makeParticipantOut(currentParticipant);
     }
     
 }
