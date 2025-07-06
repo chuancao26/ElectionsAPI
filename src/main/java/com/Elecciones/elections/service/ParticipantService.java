@@ -72,7 +72,7 @@ public class ParticipantService
         return listParticipantOut(participants);
     }
     
-    public Optional<Participant> getExistedParticipantByIdAndVotingEvent(String votingEventId, String userId)
+    public Optional<Participant> getParticipantByIdAndVotingEvent(String votingEventId, String userId)
     {
         VotingEvent votingEvent = votingEventService.getVotingEventById(votingEventId);
         UserApp userApp = userAppService.getUserById(userId);
@@ -82,7 +82,7 @@ public class ParticipantService
     public ParticipantOut createParticipant(ParticipantInput participant)
     {
         
-        Optional<Participant> existedParticipant = getExistedParticipantByIdAndVotingEvent(participant.eventId(), participant.userId());
+        Optional<Participant> existedParticipant = getParticipantByIdAndVotingEvent(participant.eventId(), participant.userId());
         if (existedParticipant.isPresent())
         {
             return makeParticipantOut(existedParticipant.get());

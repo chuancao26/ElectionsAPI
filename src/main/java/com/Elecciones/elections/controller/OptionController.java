@@ -2,6 +2,7 @@ package com.Elecciones.elections.controller;
 
 import com.Elecciones.elections.domain.Option;
 import com.Elecciones.elections.dto.OptionInput;
+import com.Elecciones.elections.dto.OptionOut;
 import com.Elecciones.elections.service.OptionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -25,7 +26,7 @@ public class OptionController
     @GetMapping("/voting-event/{id}")
     public ResponseEntity<?> getOptionsByVotingEvent(@PathVariable String id)
     {
-        List<Option> options = optionService.getOptionByVoteEvent(id);
+        List<OptionOut> options = optionService.getOptionByVoteEvent(id);
         return new ResponseEntity<>(options, HttpStatus.OK);
     }
     
@@ -53,7 +54,7 @@ public class OptionController
             @RequestBody OptionInput option
     )
     {
-        Option created = this.optionService.createOption(option, votingEventId);
+        OptionOut created = this.optionService.createOption(option, votingEventId);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
     

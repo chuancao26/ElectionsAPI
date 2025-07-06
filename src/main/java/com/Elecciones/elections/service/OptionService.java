@@ -3,6 +3,7 @@ package com.Elecciones.elections.service;
 import com.Elecciones.elections.domain.Option;
 import com.Elecciones.elections.domain.VotingEvent;
 import com.Elecciones.elections.dto.OptionInput;
+import com.Elecciones.elections.dto.OptionOut;
 import com.Elecciones.elections.repository.OptionRepository;
 import com.Elecciones.elections.repository.VotingEventRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,21 +26,46 @@ public class OptionService
         this.optionRepository = optionRepository;
         this.votingEventService = votingEventService;
     }
-    
-    public List<Option> getOptionByVoteEvent(String eventId)
+    private List<OptionOut> listOptionOut(List<Option> options)
     {
-        VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
-        return optionRepository.findByVotingEvent(votingEvent);
+        return options.stream()
+                .map(
+                        option -> new OptionOut(
+                                option.getId(),
+                                option.getLabel(),
+                                option.getVotingEvent().getId(),
+                                option.getVotingEvent().getTitle()
+                        )
+                )
+                .toList();
+    }
+    private OptionOut makeOptionOut(Option option)
+    {
+        return new OptionOut(
+                option.getId(),
+                option.getLabel(),
+                option.getVotingEvent().getId(),
+                option.getVotingEvent().getTitle()
+        );
     }
     
-    public Option createOption(OptionInput optionInput, String votingEventId)
+    public List<OptionOut> getOptionByVoteEvent(String eventId)
+    {
+        VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
+        
+        List<Option> option = optionRepository.findByVotingEvent(votingEvent);
+        
+        return listOptionOut(option);
+    }
+    
+    public OptionOut createOption(OptionInput optionInput, String votingEventId)
     {
         VotingEvent votingEvent = this.votingEventService.getVotingEventById(votingEventId);
         
         Option option = new Option(optionInput);
         option.setVotingEvent(votingEvent);
         
-        return this.optionRepository.save(option);
+        return makeOptionOut(this.optionRepository.save(option));
     }
     
     public void deleteOption(Long id) {
