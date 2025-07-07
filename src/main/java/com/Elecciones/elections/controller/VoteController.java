@@ -1,8 +1,14 @@
 package com.Elecciones.elections.controller;
 
+import com.Elecciones.elections.dto.VoteInput;
+import com.Elecciones.elections.dto.VoteOut;
 import com.Elecciones.elections.service.VoteService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/vote")
@@ -14,4 +20,17 @@ public class VoteController
         this.voteService = voteService;
     }
     
+    @GetMapping
+    public ResponseEntity<?> getAllVotes()
+    {
+        List<VoteOut> votes = voteService.getAll();
+        return new ResponseEntity<>(votes, HttpStatus.OK);
+    }
+    
+    @PostMapping
+    public ResponseEntity<?> createVote(@RequestBody VoteInput voteInput)
+    {
+        VoteOut vote = voteService.createVote(voteInput);
+        return new ResponseEntity<>(vote, HttpStatus.CREATED);
+    }
 }

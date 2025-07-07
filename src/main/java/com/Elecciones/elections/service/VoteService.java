@@ -3,10 +3,7 @@ package com.Elecciones.elections.service;
 import com.Elecciones.elections.Exception.BadRequestException;
 import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.domain.*;
-import com.Elecciones.elections.dto.OptionOut;
-import com.Elecciones.elections.dto.UserOut;
-import com.Elecciones.elections.dto.VoteOut;
-import com.Elecciones.elections.dto.VotingEventOut;
+import com.Elecciones.elections.dto.*;
 import com.Elecciones.elections.repository.VoteRepository;
 
 import org.springframework.stereotype.Service;
@@ -71,20 +68,22 @@ public class VoteService
     }
     public VoteOut getVoteOutById(Long id)
     {
-        
         Vote vote = getVoteById(id);
         return makeVoteOut(vote);
     }
     public List<VoteOut> getAllByVotingEvent(String eventId)
     {
         VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
-        List<Vote> votes =
+        List<Vote> votes = voteRepository.findByOption_VotingEvent(votingEvent);
+        return listVoteOut(votes);
     }
-    public VoteOut createVote(OptionOut option, UserOut voter)
+    public VoteOut createVote(VoteInput voteInput)
     {
+        Option option = optionService.getOptionById(voteInput.optionId());
+        
        Participant participant = participantService.getParticipantByIdAndVotingEvent(
-                option.votingEventId(),
-                voter.id()
+                option.getVotingEvent().getId(),
+                voteInput.userId()
         ).get();
        // is participant?
        if (participant == null)
@@ -97,8 +96,8 @@ public class VoteService
            throw new ConflictException("Participant is already banned");
        }
        
-       Option currentOption = optionService.getOptionById(option.id());
-       UserApp userApp = userAppService.getUserById(voter.id());
+       Option currentOption = optionService.getOptionById(voteInput.optionId());
+       UserApp userApp = userAppService.getUserById(voteInput.userId());
        
        // make a vote
        Vote vote = new Vote();

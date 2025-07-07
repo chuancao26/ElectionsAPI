@@ -73,6 +73,12 @@ public class OptionService
         this.optionRepository.delete(option);
     }
     
+    public Option getOptionById(Long id) {
+        Option option = this.optionRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Option does not exist with ID: " + id)
+        );
+        return option;
+    }
     
     
     
@@ -101,11 +107,5 @@ public class OptionService
     public Iterable<Option> getAllOptions() {
         this.log.info("Get all options");
         return this.optionRepository.findAll();
-    }
-    public Option getOptionById(Long id) {
-        Option option = this.optionRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Option does not exist with ID: " + id)
-        );
-        return option;
     }
 }
