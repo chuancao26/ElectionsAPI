@@ -16,7 +16,8 @@ public class VoteController
 {
     private final VoteService voteService;
     
-    public VoteController(VoteService voteService) {
+    public VoteController(VoteService voteService)
+    {
         this.voteService = voteService;
     }
     
@@ -33,4 +34,20 @@ public class VoteController
         VoteOut vote = voteService.createVote(voteInput);
         return new ResponseEntity<>(vote, HttpStatus.CREATED);
     }
+    
+    @GetMapping("/voting-event/{id}")
+    public ResponseEntity<?> getAllVotesByVotingEventId(@PathVariable("id") String id)
+    {
+        List<VoteOut> votes = voteService.getAllByVotingEvent(id);
+        return new ResponseEntity<>(votes, HttpStatus.OK);
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getVoteById(@PathVariable("id") Long id)
+    {
+        VoteOut vote = voteService.getVoteOutById(id);
+        return new ResponseEntity<>(vote, HttpStatus.OK);
+    }
+    
 }
+

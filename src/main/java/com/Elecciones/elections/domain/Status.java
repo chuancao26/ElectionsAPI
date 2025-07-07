@@ -2,6 +2,7 @@ package com.Elecciones.elections.domain;
 
 public enum Status
 {
-    VALID,
+    VOTED,
+    PENDING,
     BANNED
 }

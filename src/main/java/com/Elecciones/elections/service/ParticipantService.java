@@ -94,13 +94,13 @@ public class ParticipantService
         Participant newParticipant = new Participant();
         newParticipant.setVotingEvent(votingEvent);
         newParticipant.setUser(userApp);
-        newParticipant.setStatus(Status.VALID);
+        newParticipant.setStatus(Status.PENDING);
         
         participantRepository.save(newParticipant);
         return makeParticipantOut(newParticipant);
     }
     
-    public ParticipantOut banParticipant(Long id)
+    public ParticipantOut setbanParticipant(Long id)
     {
         Participant currentParticipant = this.getParticipantById(id);
         currentParticipant.setStatus(Status.BANNED);
@@ -108,10 +108,18 @@ public class ParticipantService
         return makeParticipantOut(currentParticipant);
     }
     
-    public ParticipantOut validParticipant(Long id)
+    public ParticipantOut setVotedParticipant(Long id)
     {
         Participant currentParticipant = this.getParticipantById(id);
-        currentParticipant.setStatus(Status.VALID);
+        currentParticipant.setStatus(Status.VOTED);
+        participantRepository.save(currentParticipant);
+        return makeParticipantOut(currentParticipant);
+    }
+    
+    public ParticipantOut setPendingParticipant(Long id)
+    {
+        Participant currentParticipant = this.getParticipantById(id);
+        currentParticipant.setStatus(Status.PENDING);
         participantRepository.save(currentParticipant);
         return makeParticipantOut(currentParticipant);
     }

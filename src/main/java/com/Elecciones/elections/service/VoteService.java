@@ -93,8 +93,13 @@ public class VoteService
         // is banned?
        if (participant.getStatus() == Status.BANNED)
        {
-           throw new ConflictException("Participant is already banned");
+           throw new ConflictException("Participant has already banned");
        }
+       // has already voted?
+        if (participant.getStatus() == Status.VOTED)
+        {
+            throw new ConflictException("Participant has already voted");
+        }
        
        Option currentOption = optionService.getOptionById(voteInput.optionId());
        UserApp userApp = userAppService.getUserById(voteInput.userId());
@@ -104,6 +109,7 @@ public class VoteService
        vote.setVotedAt(LocalDateTime.now());
        vote.setOption(currentOption);
        vote.setVoter(userApp);
+       participantService.setVotedParticipant(participant.getId());
        
        return makeVoteOut(this.voteRepository.save(vote));
     }

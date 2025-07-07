@@ -81,9 +81,6 @@ public class OptionService
     }
     
     
-    
-    
-    
     public Option patchOption(Long id, Option patch) {
         Option option = this.getOptionById(id);
         

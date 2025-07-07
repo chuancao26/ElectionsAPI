@@ -36,15 +36,14 @@ public class ParticipantController
     @PostMapping("/ban")
     public ResponseEntity<?> banParticipant(@RequestBody Long id)
     {
-        ParticipantOut participantOut = participantService.banParticipant(id);
+        ParticipantOut participantOut = participantService.setbanParticipant(id);
         return new ResponseEntity<>(participantOut, HttpStatus.OK);
     }
     
-    @PostMapping("/valid")
-    public ResponseEntity<?> validParticipant(@RequestBody Long id)
-    {
-        ParticipantOut participantOut = participantService.validParticipant(id);
-        return new ResponseEntity<>(participantOut, HttpStatus.OK);
-    }
+//    @PostMapping("/pending") public ResponseEntity<?> validParticipant(@RequestBody Long id)
+//    {
+//        ParticipantOut participantOut = participantService.validParticipant(id);
+//        return new ResponseEntity<>(participantOut, HttpStatus.OK);
+//    }
     
 }
