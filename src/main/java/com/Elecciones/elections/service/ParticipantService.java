@@ -1,6 +1,7 @@
 package com.Elecciones.elections.service;
 
-import com.Elecciones.elections.Exception.BadRequestException;
+import com.Elecciones.elections.Exception.ConflictException;
+import com.Elecciones.elections.Exception.ResourceNotFoundException;
 import com.Elecciones.elections.domain.Participant;
 import com.Elecciones.elections.domain.Status;
 import com.Elecciones.elections.domain.UserApp;
@@ -54,10 +55,9 @@ public class ParticipantService
     }
     private Participant getParticipantById(Long id)
     {
-        Participant participant = participantRepository.findById(id).orElseThrow(
-                () -> new BadRequestException("There is no participant with id: " + id)
+        return participantRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("There is no participant with id: " + id)
         );
-        return participant;
     }
     public ParticipantOut getParticipantOutById(Long id)
     {
@@ -72,24 +72,17 @@ public class ParticipantService
         return listParticipantOut(participants);
     }
     
-    public Optional<Participant> getParticipantByIdAndVotingEvent(String votingEventId, String userId)
-    {
-        VotingEvent votingEvent = votingEventService.getVotingEventById(votingEventId);
-        UserApp userApp = userAppService.getUserById(userId);
-        return participantRepository.findByUserAndVotingEvent(userApp, votingEvent);
-    }
-    
     public ParticipantOut createParticipant(ParticipantInput participant)
     {
+        VotingEvent votingEvent = votingEventService.getVotingEventById(participant.eventId());
+        UserApp userApp = userAppService.getUserById(participant.userId());
         
-        Optional<Participant> existedParticipant = getParticipantByIdAndVotingEvent(participant.eventId(), participant.userId());
+        Optional<Participant> existedParticipant =participantRepository.findByUserAndVotingEvent(userApp, votingEvent);
+        
         if (existedParticipant.isPresent())
         {
             return makeParticipantOut(existedParticipant.get());
         }
-        
-        UserApp userApp = userAppService.getUserById(participant.userId());
-        VotingEvent votingEvent = votingEventService.getVotingEventById(participant.eventId());
         
         Participant newParticipant = new Participant();
         newParticipant.setVotingEvent(votingEvent);
@@ -100,7 +93,7 @@ public class ParticipantService
         return makeParticipantOut(newParticipant);
     }
     
-    public ParticipantOut setbanParticipant(Long id)
+    public ParticipantOut setBanParticipant(Long id)
     {
         Participant currentParticipant = this.getParticipantById(id);
         currentParticipant.setStatus(Status.BANNED);
@@ -108,20 +101,43 @@ public class ParticipantService
         return makeParticipantOut(currentParticipant);
     }
     
-    public ParticipantOut setVotedParticipant(Long id)
-    {
-        Participant currentParticipant = this.getParticipantById(id);
-        currentParticipant.setStatus(Status.VOTED);
-        participantRepository.save(currentParticipant);
-        return makeParticipantOut(currentParticipant);
-    }
+//    public ParticipantOut setVotedParticipant(Long id)
+//    {
+//        Participant currentParticipant = this.getParticipantById(id);
+//        currentParticipant.setStatus(Status.VOTED);
+//        participantRepository.save(currentParticipant);
+//        return makeParticipantOut(currentParticipant);
+//    }
+//
+//    public ParticipantOut setPendingParticipant(Long id)
+//    {
+//        Participant currentParticipant = this.getParticipantById(id);
+//        currentParticipant.setStatus(Status.PENDING);
+//        participantRepository.save(currentParticipant);
+//        return makeParticipantOut(currentParticipant);
+//    }
     
-    public ParticipantOut setPendingParticipant(Long id)
+    public Participant validParticipantAndVote(UserApp userApp, VotingEvent votingEvent)
     {
-        Participant currentParticipant = this.getParticipantById(id);
-        currentParticipant.setStatus(Status.PENDING);
-        participantRepository.save(currentParticipant);
-        return makeParticipantOut(currentParticipant);
+        Participant participant = participantRepository.findByUserAndVotingEvent(userApp, votingEvent).orElseThrow(
+                () -> new ResourceNotFoundException("There is no participant with id: " + votingEvent.getId())
+        );
+        // is banned?
+        if (participant.getStatus() == Status.BANNED)
+        {
+            throw new ConflictException("Participant is banned");
+        }
+        // has already voted?
+        if (participant.getStatus() == Status.VOTED)
+        {
+            throw new ConflictException("Participant has already voted");
+        }
+        return participant;
     }
-    
+    public ParticipantOut markAsVoted(Participant participant)
+    {
+        participant.setStatus(Status.VOTED);
+        participantRepository.save(participant);
+        return makeParticipantOut(participant);
+    }
 }

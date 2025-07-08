@@ -1,12 +1,12 @@
 package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.Exception.BadRequestException;
-import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.domain.*;
 import com.Elecciones.elections.dto.*;
 import com.Elecciones.elections.repository.VoteRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -77,41 +77,21 @@ public class VoteService
         List<Vote> votes = voteRepository.findByOption_VotingEvent(votingEvent);
         return listVoteOut(votes);
     }
+    @Transactional
     public VoteOut createVote(VoteInput voteInput)
     {
         Option option = optionService.getOptionById(voteInput.optionId());
+        UserApp userApp = userAppService.getUserById(voteInput.userId());
         
-       Participant participant = participantService.getParticipantByIdAndVotingEvent(
-                option.getVotingEvent().getId(),
-                voteInput.userId()
-        ).get();
-       // is participant?
-       if (participant == null)
-       {
-           throw new BadRequestException("User is not a participant for this voting event");
-       }
-        // is banned?
-       if (participant.getStatus() == Status.BANNED)
-       {
-           throw new ConflictException("Participant has already banned");
-       }
-       // has already voted?
-        if (participant.getStatus() == Status.VOTED)
-        {
-            throw new ConflictException("Participant has already voted");
-        }
-       
-       Option currentOption = optionService.getOptionById(voteInput.optionId());
-       UserApp userApp = userAppService.getUserById(voteInput.userId());
-       
-       // make a vote
-       Vote vote = new Vote();
-       vote.setVotedAt(LocalDateTime.now());
-       vote.setOption(currentOption);
-       vote.setVoter(userApp);
-       participantService.setVotedParticipant(participant.getId());
-       
-       return makeVoteOut(this.voteRepository.save(vote));
+        Participant participant = participantService.validParticipantAndVote(userApp, option.getVotingEvent());
+        participantService.markAsVoted(participant);
+        
+        Vote vote = new Vote();
+        vote.setVotedAt(LocalDateTime.now());
+        vote.setOption(option);
+        vote.setVoter(userApp);
+        
+        return makeVoteOut(this.voteRepository.save(vote));
     }
     
 }

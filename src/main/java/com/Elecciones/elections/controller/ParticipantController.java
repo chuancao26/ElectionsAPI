@@ -1,6 +1,5 @@
 package com.Elecciones.elections.controller;
 
-import com.Elecciones.elections.domain.Participant;
 import com.Elecciones.elections.dto.ParticipantInput;
 import com.Elecciones.elections.dto.ParticipantOut;
 import com.Elecciones.elections.service.ParticipantService;
@@ -19,6 +18,13 @@ public class ParticipantController
     public ParticipantController(ParticipantService participantService) {
         this.participantService = participantService;
     }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getParticipantById(@PathVariable Long id)
+    {
+        ParticipantOut participantOut = participantService.getParticipantOutById(id);
+        return new ResponseEntity<>(participantOut, HttpStatus.OK);
+    }
     @GetMapping("/voting-event/{id}")
     public ResponseEntity<?> getParticipantsByVotingEventId(@PathVariable("id") String id)
     {
@@ -36,7 +42,7 @@ public class ParticipantController
     @PostMapping("/ban")
     public ResponseEntity<?> banParticipant(@RequestBody Long id)
     {
-        ParticipantOut participantOut = participantService.setbanParticipant(id);
+        ParticipantOut participantOut = participantService.setBanParticipant(id);
         return new ResponseEntity<>(participantOut, HttpStatus.OK);
     }
     
