@@ -2,10 +2,7 @@ package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.Exception.ResourceNotFoundException;
-import com.Elecciones.elections.domain.Participant;
-import com.Elecciones.elections.domain.Status;
-import com.Elecciones.elections.domain.UserApp;
-import com.Elecciones.elections.domain.VotingEvent;
+import com.Elecciones.elections.domain.*;
 import com.Elecciones.elections.dto.ParticipantInput;
 import com.Elecciones.elections.dto.ParticipantOut;
 import com.Elecciones.elections.repository.ParticipantRepository;
@@ -75,8 +72,11 @@ public class ParticipantService
     public ParticipantOut createParticipant(ParticipantInput participant)
     {
         VotingEvent votingEvent = votingEventService.getVotingEventById(participant.eventId());
+        if (votingEvent.getStatus() == VotingEventStatus.CLOSED)
+        {
+            throw new ConflictException("Voting Event is closed");
+        }
         UserApp userApp = userAppService.getUserById(participant.userId());
-        
         Optional<Participant> existedParticipant =participantRepository.findByUserAndVotingEvent(userApp, votingEvent);
         
         if (existedParticipant.isPresent())

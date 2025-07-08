@@ -1,6 +1,7 @@
 package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.Exception.BadRequestException;
+import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.domain.*;
 import com.Elecciones.elections.dto.*;
 import com.Elecciones.elections.repository.VoteRepository;
@@ -83,7 +84,14 @@ public class VoteService
         Option option = optionService.getOptionById(voteInput.optionId());
         UserApp userApp = userAppService.getUserById(voteInput.userId());
         
-        Participant participant = participantService.validParticipantAndVote(userApp, option.getVotingEvent());
+        VotingEvent votingEvent = option.getVotingEvent();
+        
+        if (!votingEventService.isBetweenTimeRanges(votingEvent))
+        {
+            throw new ConflictException("The voting event time range is invalid");
+        }
+        
+        Participant participant = participantService.validParticipantAndVote(userApp, votingEvent);
         participantService.markAsVoted(participant);
         
         Vote vote = new Vote();

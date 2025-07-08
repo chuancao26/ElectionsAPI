@@ -1,5 +1,6 @@
 package com.Elecciones.elections.service;
 
+import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.domain.Option;
 import com.Elecciones.elections.domain.VotingEvent;
 import com.Elecciones.elections.dto.OptionInput;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -61,6 +63,11 @@ public class OptionService
     public OptionOut createOption(OptionInput optionInput, String votingEventId)
     {
         VotingEvent votingEvent = this.votingEventService.getVotingEventById(votingEventId);
+        
+        if (votingEventService.isBetweenTimeRanges(votingEvent))
+        {
+            throw new ConflictException("The voting event has started");
+        }
         
         Option option = new Option(optionInput);
         option.setVotingEvent(votingEvent);

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -86,6 +87,7 @@ public class VotingEventService
                 votingEventInput.startTime().isAfter(votingEventInput.endTime())) {
             throw new BadRequestException("Start time cannot be after end time");
         }
+        
         UserApp creator = userAppService.getUserById(creatorId);
         VotingEvent votingEvent = new VotingEvent(votingEventInput);
         
@@ -95,7 +97,17 @@ public class VotingEventService
         return makeVotingEventOut(this.votingEventRepository.save(votingEvent));
     }
     
-    
+    public boolean isBetweenTimeRanges(VotingEvent votingEvent)
+    {
+        LocalDateTime now = LocalDateTime.now();
+        if (votingEvent.getStartTime() != null && now.isBefore(votingEvent.getStartTime())) {
+            return false;
+        }
+        if (votingEvent.getEndTime() != null && now.isAfter(votingEvent.getEndTime())) {
+            return false;
+        }
+        return true;
+    }
     
     
     public VotingEvent patchVotingEvent(String id, VotingEvent patch) {

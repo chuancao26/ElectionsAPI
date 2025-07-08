@@ -34,6 +34,7 @@ public class VotingEvent
     @OneToMany(mappedBy = "votingEvent", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Option> options = new ArrayList<>();
+    private VotingEventStatus status = VotingEventStatus.OPENED;
     
     @OneToMany(mappedBy = "votingEvent", cascade = CascadeType.ALL)
     @JsonManagedReference
