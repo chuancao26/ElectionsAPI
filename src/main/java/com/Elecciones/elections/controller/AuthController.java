@@ -16,8 +16,8 @@ public class AuthController {
     
     @PostMapping("/google")
     public ResponseEntity<LoginResponse> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
-//        LoginResponse response = authService.loginWithGoogle(request);
-        LoginResponse response = authService.loginWithGoogleFake();
+        LoginResponse response = authService.loginWithGoogle(request);
+        
         return ResponseEntity.ok(response);
     }
 }
