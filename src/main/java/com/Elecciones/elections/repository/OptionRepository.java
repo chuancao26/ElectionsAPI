@@ -9,4 +9,5 @@ import java.util.List;
 public interface OptionRepository extends JpaRepository<Option, Long>
 {
     List<Option> findByVotingEvent(VotingEvent votingEvent);
+    List<Option> findAll();
 }

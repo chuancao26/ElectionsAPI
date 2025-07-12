@@ -9,7 +9,6 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/voting-event", produces = "application/json")
@@ -23,20 +22,18 @@ public class VotingEventController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getVotingEvent(@PathVariable("id") String id)
+    public ResponseEntity<VotingEventOut> getVotingEvent(@PathVariable("id") String id)
     {
-        log.info("captured");
-        VotingEvent event = this.votingEventService.getVotingEventById(id);
+        VotingEventOut event = this.votingEventService.getVotingEventOutById(id);
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
     
     @GetMapping ("/creator/{creatorId}")
-    public ResponseEntity<?> getVotingEventByCreator(@PathVariable("creatorId") String creatorId)
+    public ResponseEntity<List<VotingEventOut>> getVotingEventByCreator(@PathVariable("creatorId") String creatorId)
     {
         List<VotingEventOut> events = this.votingEventService.getVotingEventsByCreator(creatorId);
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
-    
     
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -46,7 +43,7 @@ public class VotingEventController {
     
     @PostMapping(path = "/{creatorId}", consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> createVotingEvent(
+    public ResponseEntity<VotingEventOut> createVotingEvent(
             @PathVariable String creatorId,
             @RequestBody VotingEventInput votingEventInput)
     {
@@ -55,41 +52,29 @@ public class VotingEventController {
     }
     
     @PatchMapping("/{id}")
-    public ResponseEntity<?> patchVotingEvent(
+    public ResponseEntity<VotingEventOut> patchVotingEvent(
             @PathVariable String id,
-            @RequestBody VotingEvent patch
+            @RequestBody VotingEventInput patch
     ) {
-        try {
-            VotingEvent updated = this.votingEventService.patchVotingEvent(id, patch);
-            return new ResponseEntity<>(updated, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.NOT_FOUND);
-        }
+        VotingEventOut updated = this.votingEventService.patchVotingEvent(id, patch);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
     }
     
     @PutMapping("/{id}/{creatorId}")
-    public ResponseEntity<?> putVotingEvent(
+    public ResponseEntity<VotingEventOut> putVotingEvent(
             @PathVariable String id,
             @PathVariable String creatorId,
-            @RequestBody VotingEvent putVotingEvent
-    ) {
-        try {
-            VotingEvent updated = this.votingEventService.putVotingEvent(id, putVotingEvent, creatorId);
-            return new ResponseEntity<>(updated, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.NOT_FOUND);
-        }
+            @RequestBody VotingEventInput putVotingEvent
+    )
+    {
+        VotingEventOut updated = this.votingEventService.putVotingEvent(id, putVotingEvent, creatorId);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
     }
     
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteVotingEvent(@PathVariable String id) {
-        try {
-            this.votingEventService.deleteVotingEvent(id);
-        } catch (RuntimeException e) {
-            log.error("Error deleting voting event", e);
-        }
+    public void deleteVotingEvent(@PathVariable String id)
+    {
+        this.votingEventService.deleteVotingEvent(id);
     }
 }

@@ -22,12 +22,10 @@ public class VotingEventService
     private final VotingEventRepository votingEventRepository;
     private final UserAppService userAppService;
     private final Logger log = LoggerFactory.getLogger(VotingEventService.class);
-    private final ServerProperties serverProperties;
     
-    public VotingEventService(VotingEventRepository votingEventRepository, UserAppService userAppService, ServerProperties serverProperties) {
+    public VotingEventService(VotingEventRepository votingEventRepository, UserAppService userAppService) {
         this.votingEventRepository = votingEventRepository;
         this.userAppService = userAppService;
-        this.serverProperties = serverProperties;
     }
     
     private VotingEventOut makeVotingEventOut(VotingEvent votingEvent)
@@ -62,7 +60,8 @@ public class VotingEventService
         return listVotingEventOut(this.votingEventRepository.findAll());
     }
     
-    public VotingEvent getVotingEventById(String id) {
+    public VotingEvent getVotingEventById(String id)
+    {
         VotingEvent event = this.votingEventRepository.findById(id).orElseThrow(
                 () -> new ConflictException("VotingEvent does not exist with ID: " + id)
         );
@@ -110,20 +109,22 @@ public class VotingEventService
     }
     
     
-    public VotingEvent patchVotingEvent(String id, VotingEvent patch) {
+    public VotingEventOut patchVotingEvent(String id, VotingEventInput patch)
+    {
         VotingEvent event = this.getVotingEventById(id);
         
-        if (patch.getTitle() != null) {
-            event.setTitle(patch.getTitle());
+        
+        if (patch.title() != null) {
+            event.setTitle(patch.title());
         }
-        if (patch.getDescription() != null) {
-            event.setDescription(patch.getDescription());
+        if (patch.description() != null) {
+            event.setDescription(patch.description());
         }
-        if (patch.getStartTime() != null) {
-            event.setStartTime(patch.getStartTime());
+        if (patch.startTime() != null) {
+            event.setStartTime(patch.startTime());
         }
-        if (patch.getEndTime() != null) {
-            event.setEndTime(patch.getEndTime());
+        if (patch.endTime() != null) {
+            event.setEndTime(patch.endTime());
         }
         
         if (event.getStartTime() != null && event.getEndTime() != null &&
@@ -131,14 +132,16 @@ public class VotingEventService
             throw new IllegalArgumentException("Start time cannot be after end time");
         }
         
-        return this.votingEventRepository.save(event);
+        return makeVotingEventOut(this.votingEventRepository.save(event));
     }
     
-    public VotingEvent putVotingEvent(String id, VotingEvent putVotingEvent, String creatorId) {
+    public VotingEventOut putVotingEvent(String id, VotingEventInput put, String creatorId)
+    {
         VotingEvent event = this.getVotingEventById(id);
         
         UserApp creator = userAppService.getUserById(creatorId);
         
+        VotingEvent putVotingEvent= new VotingEvent(put);
         putVotingEvent.setId(id);
         putVotingEvent.setCreatedAt(event.getCreatedAt());
         putVotingEvent.setCreator(creator);
@@ -148,12 +151,11 @@ public class VotingEventService
             throw new IllegalArgumentException("Start time cannot be after end time");
         }
         
-        return this.votingEventRepository.save(putVotingEvent);
+        return makeVotingEventOut(this.votingEventRepository.save(putVotingEvent));
     }
     
     public void deleteVotingEvent(String id) {
         VotingEvent event = this.getVotingEventById(id);
         this.votingEventRepository.delete(event);
-        this.log.info("Deleted voting event with id {}", id);
     }
 }

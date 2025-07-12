@@ -20,27 +20,27 @@ public class ParticipantController
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getParticipantById(@PathVariable Long id)
+    public ResponseEntity<ParticipantOut> getParticipantById(@PathVariable Long id)
     {
         ParticipantOut participantOut = participantService.getParticipantOutById(id);
         return new ResponseEntity<>(participantOut, HttpStatus.OK);
     }
     @GetMapping("/voting-event/{id}")
-    public ResponseEntity<?> getParticipantsByVotingEventId(@PathVariable("id") String id)
+    public ResponseEntity<List<ParticipantOut>> getParticipantsByVotingEventId(@PathVariable("id") String id)
     {
         List<ParticipantOut> participants = participantService.getParticipantsByEventId(id);
         return new ResponseEntity<>(participants, HttpStatus.OK);
     }
     
     @PostMapping
-    public ResponseEntity<?> createParticipant(@RequestBody ParticipantInput participant)
+    public ResponseEntity<ParticipantOut> createParticipant(@RequestBody ParticipantInput participant)
     {
         ParticipantOut newParticipant = participantService.createParticipant(participant);
         return new ResponseEntity<>(newParticipant, HttpStatus.CREATED);
     }
     
     @PostMapping("/ban")
-    public ResponseEntity<?> banParticipant(@RequestBody Long id)
+    public ResponseEntity<ParticipantOut> banParticipant(@RequestBody Long id)
     {
         ParticipantOut participantOut = participantService.setBanParticipant(id);
         return new ResponseEntity<>(participantOut, HttpStatus.OK);

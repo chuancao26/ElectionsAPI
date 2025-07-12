@@ -22,28 +22,28 @@ public class VoteController
     }
     
     @GetMapping
-    public ResponseEntity<?> getAllVotes()
+    public ResponseEntity<List<VoteOut>> getAllVotes()
     {
         List<VoteOut> votes = voteService.getAll();
         return new ResponseEntity<>(votes, HttpStatus.OK);
     }
     
     @PostMapping
-    public ResponseEntity<?> createVote(@RequestBody VoteInput voteInput)
+    public ResponseEntity<VoteOut> createVote(@RequestBody VoteInput voteInput)
     {
         VoteOut vote = voteService.createVote(voteInput);
         return new ResponseEntity<>(vote, HttpStatus.CREATED);
     }
     
     @GetMapping("/voting-event/{id}")
-    public ResponseEntity<?> getAllVotesByVotingEventId(@PathVariable("id") String id)
+    public ResponseEntity<List<VoteOut>> getAllVotesByVotingEventId(@PathVariable("id") String id)
     {
         List<VoteOut> votes = voteService.getAllByVotingEvent(id);
         return new ResponseEntity<>(votes, HttpStatus.OK);
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getVoteById(@PathVariable("id") Long id)
+    public ResponseEntity<VoteOut> getVoteById(@PathVariable("id") Long id)
     {
         VoteOut vote = voteService.getVoteOutById(id);
         return new ResponseEntity<>(vote, HttpStatus.OK);

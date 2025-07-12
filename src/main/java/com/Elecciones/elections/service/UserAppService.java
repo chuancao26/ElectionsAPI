@@ -63,7 +63,7 @@ public class UserAppService
         return user;
     }
     
-    public UserApp patchUser(UserApp patch, String id) {
+    public UserOut patchUser(UserApp patch, String id) {
         UserApp user = this.getUserById(id);
         
         if (patch.getName() != null) {
@@ -82,10 +82,10 @@ public class UserAppService
         }
         
         user.setModifiedAt(LocalDateTime.now());
-        return this.userAppRepository.save(user);
+        return makeUserOut(this.userAppRepository.save(user));
     }
     
-    public UserApp putUser(String id, UserApp putUser) {
+    public UserOut putUser(String id, UserApp putUser) {
         UserApp user = this.getUserById(id);
         
         if (!putUser.getId().equals(user.getId())) {
@@ -101,7 +101,7 @@ public class UserAppService
         
         putUser.setModifiedAt(LocalDateTime.now());
         putUser.setCreatedAt(user.getCreatedAt()); // conservar fecha de creación
-        return this.userAppRepository.save(putUser);
+        return makeUserOut(this.userAppRepository.save(putUser));
     }
     
     public void deleteUser(String id) {

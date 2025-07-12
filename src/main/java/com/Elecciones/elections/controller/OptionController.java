@@ -24,32 +24,28 @@ public class OptionController
     }
     
     @GetMapping("/voting-event/{id}")
-    public ResponseEntity<?> getOptionsByVotingEvent(@PathVariable String id)
+    public ResponseEntity<List<OptionOut>> getOptionsByVotingEvent(@PathVariable String id)
     {
         List<OptionOut> options = optionService.getOptionByVoteEvent(id);
         return new ResponseEntity<>(options, HttpStatus.OK);
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOption(@PathVariable("id") Long id) {
-        try {
-            Option option = this.optionService.getOptionById(id);
-            return new ResponseEntity<>(option, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            log.error("Error getting option", e);
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
-        }
+    public ResponseEntity<OptionOut>getOption(@PathVariable("id") Long id) {
+        OptionOut option = this.optionService.getOptionOutById(id);
+        return new ResponseEntity<>(option, HttpStatus.OK);
     }
     
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Iterable<Option> getOptions() {
-        return this.optionService.getAllOptions();
+    public ResponseEntity<List<OptionOut>> getOptions()
+    {
+        return ResponseEntity.ok(this.optionService.getAllOptions());
     }
     
     @PostMapping(path = "/{votingEventId}", consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> createOption(
+    public ResponseEntity<OptionOut> createOption(
             @PathVariable String votingEventId,
             @RequestBody OptionInput option
     )
@@ -61,25 +57,16 @@ public class OptionController
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteOption(@PathVariable Long id) {
-        try {
-            this.optionService.deleteOption(id);
-        } catch (RuntimeException e) {
-            log.error("Error deleting option", e);
-        }
+        this.optionService.deleteOption(id);
     }
     @PatchMapping("/{id}")
-    public ResponseEntity<?> patchOption(
+    public ResponseEntity<Option> patchOption(
             @PathVariable Long id,
             @RequestBody Option patch
-    ) {
-        try {
-            Option updated = this.optionService.patchOption(id, patch);
-            return new ResponseEntity<>(updated, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.NOT_FOUND);
-        }
+    )
+    {
+        Option updated = this.optionService.patchOption(id, patch);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
     }
     
     @PutMapping("/{id}/{votingEventId}")

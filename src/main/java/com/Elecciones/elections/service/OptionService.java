@@ -1,6 +1,7 @@
 package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.Exception.ConflictException;
+import com.Elecciones.elections.Exception.ResourceNotFoundException;
 import com.Elecciones.elections.domain.Option;
 import com.Elecciones.elections.domain.VotingEvent;
 import com.Elecciones.elections.dto.OptionInput;
@@ -80,9 +81,15 @@ public class OptionService
         this.optionRepository.delete(option);
     }
     
+    public OptionOut getOptionOutById(Long id) {
+        Option option = this.optionRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Option does not exist with ID: " + id)
+        );
+        return makeOptionOut(option);
+    }
     public Option getOptionById(Long id) {
         Option option = this.optionRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Option does not exist with ID: " + id)
+                () -> new ResourceNotFoundException("Option does not exist with ID: " + id)
         );
         return option;
     }
@@ -108,8 +115,8 @@ public class OptionService
         
         return this.optionRepository.save(putOption);
     }
-    public Iterable<Option> getAllOptions() {
-        this.log.info("Get all options");
-        return this.optionRepository.findAll();
+    public List<OptionOut> getAllOptions() {
+        List<OptionOut> options = listOptionOut(this.optionRepository.findAll());
+        return options;
     }
 }
