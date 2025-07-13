@@ -1,9 +1,11 @@
 package com.Elecciones.elections.security;
 
 import com.Elecciones.elections.domain.UserApp;
+import com.Elecciones.elections.dto.UserOut;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -11,15 +13,16 @@ import java.util.Date;
 @Service
 public class JwtService {
     
-    private final String SECRET = "mi-super-clave"; // cámbialo a algo seguro
+    @Value("${secret.code}")
+    private String SECRET;
     
-    public String generateToken(UserApp user) {
+    public String generateToken(UserOut user) {
         return Jwts.builder()
-                .setSubject(user.getEmail())
-                .claim("userId", user.getId())
-                .claim("name", user.getName())
+                .setSubject(user.email())
+                .claim("userId", user.id())
+                .claim("name", user.name())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 día
+                .setExpiration(new Date(System.currentTimeMillis() + 3000000))
                 .signWith(SignatureAlgorithm.HS256, SECRET)
                 .compact();
     }

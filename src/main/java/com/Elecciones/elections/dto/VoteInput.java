@@ -1,7 +1,10 @@
 package com.Elecciones.elections.dto;
 
-public record VoteInput(Long optionId,
-                        String userId
-                        )
+import jakarta.validation.constraints.NotBlank;
+
+public record VoteInput(
+        @NotBlank  Long optionId,
+        @NotBlank  String userId
+)
 {
 }
