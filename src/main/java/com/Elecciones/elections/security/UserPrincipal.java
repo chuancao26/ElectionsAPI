@@ -32,7 +32,7 @@ public class UserPrincipal implements UserDetails {
     
     @Override
     public String getPassword() {
-        return null; // no la necesitas en JWT
+        return null;
     }
     
     @Override

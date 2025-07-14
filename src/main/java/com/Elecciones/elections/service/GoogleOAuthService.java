@@ -26,7 +26,7 @@ public class GoogleOAuthService {
         params.add("client_id", clientId);
         params.add("client_secret", clientSecret);
         params.add("code", code);
-        params.add("code_verifier", codeVerifier);
+        //params.add("code_verifier", codeVerifier);
         params.add("grant_type", "authorization_code");
         params.add("redirect_uri", redirectUri);
         

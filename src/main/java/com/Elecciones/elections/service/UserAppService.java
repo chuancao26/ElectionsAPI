@@ -1,9 +1,11 @@
 package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.Exception.ConflictException;
+import com.Elecciones.elections.Exception.ResourceNotFoundException;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.dto.UserInput;
 import com.Elecciones.elections.dto.UserOut;
+import com.Elecciones.elections.dto.UserPatchInput;
 import com.Elecciones.elections.repository.UserAppRepository;
 import org.springframework.stereotype.Service;
 
@@ -51,57 +53,35 @@ public class UserAppService
     
     public UserOut getUserOutById(String id) {
         UserApp user = this.userAppRepository.findById(id).orElseThrow(
-                () -> new ConflictException("User does not exist with ID: " + id)
+                () -> new ResourceNotFoundException("User does not exist with ID: " + id)
         );
         return new UserOut(user.getId(), user.getName(), user.getEmail());
     }
     
     public UserApp getUserById(String id) {
         UserApp user = this.userAppRepository.findById(id).orElseThrow(
-                () -> new ConflictException("User does not exist with ID: " + id)
+                () -> new ResourceNotFoundException("User does not exist with ID: " + id)
         );
         return user;
     }
     
-    public UserOut patchUser(UserApp patch, String id) {
+    public UserOut patchUser(UserPatchInput patch , String id) {
         UserApp user = this.getUserById(id);
         
-        if (patch.getName() != null) {
-            user.setName(patch.getName());
+        if (patch.name() != null) {
+            user.setName(patch.name());
         }
-        if (patch.getEmail() != null) {
-            this.userAppRepository.findByEmail(patch.getEmail()).ifPresent(existing -> {
+        if (patch.email() != null) {
+            this.userAppRepository.findByEmail(patch.email()).ifPresent(existing -> {
                 if (!existing.getId().equals(id)) {
                     throw new IllegalArgumentException("Email already in use by another user");
                 }
             });
-            user.setEmail(patch.getEmail());
-        }
-        if (patch.getPhoto() != null) {
-            user.setPhoto(patch.getPhoto());
+            user.setEmail(patch.email());
         }
         
         user.setModifiedAt(LocalDateTime.now());
         return makeUserOut(this.userAppRepository.save(user));
-    }
-    
-    public UserOut putUser(String id, UserApp putUser) {
-        UserApp user = this.getUserById(id);
-        
-        if (!putUser.getId().equals(user.getId())) {
-            throw new IllegalArgumentException("ID not valid for update");
-        }
-        
-        // Validar email único
-        this.userAppRepository.findByEmail(putUser.getEmail()).ifPresent(existing -> {
-            if (!existing.getId().equals(id)) {
-                throw new IllegalArgumentException("Email already in use by another user");
-            }
-        });
-        
-        putUser.setModifiedAt(LocalDateTime.now());
-        putUser.setCreatedAt(user.getCreatedAt()); // conservar fecha de creación
-        return makeUserOut(this.userAppRepository.save(putUser));
     }
     
     public void deleteUser(String id) {
@@ -112,7 +92,7 @@ public class UserAppService
     
     public void deleteUserByEmail(String email) {
         UserApp user = this.userAppRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User does not exist with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("User does not exist with email: " + email));
         this.userAppRepository.delete(user);
         this.log.info("Deleted user with email {}", email);
     }
