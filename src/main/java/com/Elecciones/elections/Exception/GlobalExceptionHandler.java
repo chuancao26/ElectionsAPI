@@ -49,7 +49,13 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
-    
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Map<String, String>> handleForbidden(ForbiddenException e) {
+        return new ResponseEntity<>(
+                Map.of("message", e.getMessage()),
+                HttpStatus.FORBIDDEN
+        );
+    }
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<Map<String, String>> handleMissingParams(MissingServletRequestParameterException ex) {
         String name = ex.getParameterName();

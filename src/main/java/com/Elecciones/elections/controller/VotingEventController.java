@@ -1,11 +1,13 @@
 package com.Elecciones.elections.controller;
 
+import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.domain.VotingEvent;
 import com.Elecciones.elections.dto.VotingEventInput;
 import com.Elecciones.elections.dto.VotingEventOut;
 import com.Elecciones.elections.service.VotingEventService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,10 +30,10 @@ public class VotingEventController {
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
     
-    @GetMapping ("/creator/{creatorId}")
-    public ResponseEntity<List<VotingEventOut>> getVotingEventByCreator(@PathVariable("creatorId") String creatorId)
+    @GetMapping ("/creator")
+    public ResponseEntity<List<VotingEventOut>> getVotingEventByCreator(@AuthenticationPrincipal UserApp userApp)
     {
-        List<VotingEventOut> events = this.votingEventService.getVotingEventsByCreator(creatorId);
+        List<VotingEventOut> events = this.votingEventService.getVotingEventsByCreator(userApp.getId());
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
     
@@ -41,22 +43,23 @@ public class VotingEventController {
         return this.votingEventService.getAllVotingEvents();
     }
     
-    @PostMapping(path = "/{creatorId}", consumes = "application/json")
+    @PostMapping(consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<VotingEventOut> createVotingEvent(
-            @PathVariable String creatorId,
+            @AuthenticationPrincipal UserApp userApp,
             @RequestBody VotingEventInput votingEventInput)
     {
-        VotingEventOut created = this.votingEventService.createVotingEvent(votingEventInput, creatorId);
+        VotingEventOut created = this.votingEventService.createVotingEvent(votingEventInput, userApp.getId());
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
     
     @PatchMapping("/{id}")
     public ResponseEntity<VotingEventOut> patchVotingEvent(
             @PathVariable String id,
+            @AuthenticationPrincipal UserApp userApp,
             @RequestBody VotingEventInput patch
     ) {
-        VotingEventOut updated = this.votingEventService.patchVotingEvent(id, patch);
+        VotingEventOut updated = this.votingEventService.patchVotingEvent(id, userApp, patch);
         return new ResponseEntity<>(updated, HttpStatus.OK);
     }
     
