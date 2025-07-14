@@ -36,7 +36,7 @@ public class AuthService {
         
         Map<String, Object> payload = JwtUtils.decodeJWT(googleTokens.idToken());
         
-        String id = (String) payload.get("id_token");
+        String id = (String) payload.get("sub");
         String email = (String) payload.get("email");
         String name = (String) payload.get("name");
         String photo = (String) payload.get("picture");
