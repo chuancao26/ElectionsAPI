@@ -1,9 +1,8 @@
 package com.Elecciones.elections.controller;
 
-import com.Elecciones.elections.domain.UserApp;
-import com.Elecciones.elections.domain.VotingEvent;
 import com.Elecciones.elections.dto.VotingEventInput;
 import com.Elecciones.elections.dto.VotingEventOut;
+import com.Elecciones.elections.security.UserPrincipal;
 import com.Elecciones.elections.service.VotingEventService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -24,60 +23,56 @@ public class VotingEventController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<VotingEventOut> getVotingEvent(@PathVariable("id") String id)
+    public ResponseEntity<VotingEventOut> getVotingEvent(@PathVariable("id") String id,
+                                                         @AuthenticationPrincipal UserPrincipal user)
     {
-        VotingEventOut event = this.votingEventService.getVotingEventOutById(id);
+        VotingEventOut event = this.votingEventService.getVotingEventOutById(id, user.getId());
         return new ResponseEntity<>(event, HttpStatus.OK);
-    }
-    
-    @GetMapping ("/creator")
-    public ResponseEntity<List<VotingEventOut>> getVotingEventByCreator(@AuthenticationPrincipal UserApp userApp)
-    {
-        List<VotingEventOut> events = this.votingEventService.getVotingEventsByCreator(userApp.getId());
-        return new ResponseEntity<>(events, HttpStatus.OK);
     }
     
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<VotingEventOut> getVotingEvents() {
-        return this.votingEventService.getAllVotingEvents();
+    public List<VotingEventOut> getVotingEvents(@AuthenticationPrincipal UserPrincipal user) {
+        return this.votingEventService.getAllVotingEvents(user.getId());
     }
     
     @PostMapping(consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<VotingEventOut> createVotingEvent(
-            @AuthenticationPrincipal UserApp userApp,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestBody VotingEventInput votingEventInput)
     {
-        VotingEventOut created = this.votingEventService.createVotingEvent(votingEventInput, userApp.getId());
+        VotingEventOut created = this.votingEventService.createVotingEvent(votingEventInput,
+                user.getId());
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
     
     @PatchMapping("/{id}")
     public ResponseEntity<VotingEventOut> patchVotingEvent(
             @PathVariable String id,
-            @AuthenticationPrincipal UserApp userApp,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestBody VotingEventInput patch
     ) {
-        VotingEventOut updated = this.votingEventService.patchVotingEvent(id, userApp, patch);
-        return new ResponseEntity<>(updated, HttpStatus.OK);
-    }
-    
-    @PutMapping("/{id}/{creatorId}")
-    public ResponseEntity<VotingEventOut> putVotingEvent(
-            @PathVariable String id,
-            @PathVariable String creatorId,
-            @RequestBody VotingEventInput putVotingEvent
-    )
-    {
-        VotingEventOut updated = this.votingEventService.putVotingEvent(id, putVotingEvent, creatorId);
+        VotingEventOut updated = this.votingEventService.patchVotingEvent(id, user.getId(), patch);
         return new ResponseEntity<>(updated, HttpStatus.OK);
     }
     
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteVotingEvent(@PathVariable String id)
+    public void deleteVotingEvent(@PathVariable String id,
+                                  @AuthenticationPrincipal UserPrincipal user)
     {
-        this.votingEventService.deleteVotingEvent(id);
+        this.votingEventService.deleteVotingEvent(id, user.getId());
     }
+//    @PutMapping("/{id}/{creatorId}")
+//    public ResponseEntity<VotingEventOut> putVotingEvent(
+//            @PathVariable String id,
+//            @PathVariable String creatorId,
+//            @RequestBody VotingEventInput putVotingEvent
+//    )
+//    {
+//        VotingEventOut updated = this.votingEventService.putVotingEvent(id, putVotingEvent, creatorId);
+//        return new ResponseEntity<>(updated, HttpStatus.OK);
+//    }
+    
 }

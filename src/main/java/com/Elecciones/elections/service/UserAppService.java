@@ -1,6 +1,6 @@
 package com.Elecciones.elections.service;
 
-import com.Elecciones.elections.Exception.ConflictException;
+import com.Elecciones.elections.Exception.ForbiddenException;
 import com.Elecciones.elections.Exception.ResourceNotFoundException;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.dto.UserInput;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 @Service
 public class UserAppService
 {
-    private UserAppRepository userAppRepository;
+    private final UserAppRepository userAppRepository;
     private final Logger log = LoggerFactory.getLogger(UserAppService.class);
     
     private UserOut makeUserOut(UserApp userApp)
@@ -39,61 +39,55 @@ public class UserAppService
     
     public UserOut createUser(UserInput userInput)
     {
-        this.log.info("Create user with email: {}", userInput.email());
         UserApp userApp = new UserApp(userInput);
         userAppRepository.save(userApp);
         return this.makeUserOut(userApp);
     }
     
-    public List<UserOut> getAllUsers() {
-        this.log.info("Get all users");
-        List<UserApp> userApps = this.userAppRepository.findAll();
-        return listUserOut(userApps);
+//    public List<UserOut> getAllUsers() {
+//        this.log.info("Get all users");
+//        List<UserApp> userApps = this.userAppRepository.findAll();
+//        return listUserOut(userApps);
+//    }
+    private void validateUser(String currentId, String principalId)
+    {
+        if (!currentId.equals(principalId))
+            throw new ForbiddenException("You do not have permission to access this user.");
     }
     
-    public UserOut getUserOutById(String id) {
+    public UserOut getUserOutById(String id, String userId) {
         UserApp user = this.userAppRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("User does not exist with ID: " + id)
         );
+        validateUser(user.getId(), userId);
         return new UserOut(user.getId(), user.getName(), user.getEmail());
     }
     
     public UserApp getUserById(String id) {
-        UserApp user = this.userAppRepository.findById(id).orElseThrow(
+        return this.userAppRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("User does not exist with ID: " + id)
         );
-        return user;
     }
     
-    public UserOut patchUser(UserPatchInput patch , String id) {
+    public UserOut patchUser(UserPatchInput patch , String id, String userId) {
         UserApp user = this.getUserById(id);
+        
+        validateUser(user.getId(), userId);
         
         if (patch.name() != null) {
             user.setName(patch.name());
-        }
-        if (patch.email() != null) {
-            this.userAppRepository.findByEmail(patch.email()).ifPresent(existing -> {
-                if (!existing.getId().equals(id)) {
-                    throw new IllegalArgumentException("Email already in use by another user");
-                }
-            });
-            user.setEmail(patch.email());
         }
         
         user.setModifiedAt(LocalDateTime.now());
         return makeUserOut(this.userAppRepository.save(user));
     }
     
-    public void deleteUser(String id) {
+    public void deleteUser(String id, String userId) {
         UserApp user = this.getUserById(id);
+        
+        validateUser(id, userId);
+        
         this.userAppRepository.delete(user);
         this.log.info("Deleted user with id {}", id);
-    }
-    
-    public void deleteUserByEmail(String email) {
-        UserApp user = this.userAppRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User does not exist with email: " + email));
-        this.userAppRepository.delete(user);
-        this.log.info("Deleted user with email {}", email);
     }
 }
