@@ -54,9 +54,9 @@ public class VotingEventService {
     }
     
     public List<VotingEventOut> getAllVotingEvents(String userId) {
-        return listVotingEventOut(this.votingEventRepository.findAll()).stream()
-                .filter(v -> v.id().equals(userId))
-                .toList();
+        return listVotingEventOut(this.votingEventRepository.findAll().stream()
+                .filter(v -> v.getCreator().getId().equals(userId))
+                .toList());
     }
     
     public VotingEvent getVotingEventById(String id)
@@ -66,12 +66,12 @@ public class VotingEventService {
         );
     }
     
-    public VotingEventOut getVotingEventOutById(String id, String userId)
+    public VotingEventOut getVotingEventOutById(String eventId, String userId)
     {
-        VotingEvent event = getVotingEventById(id);
+        VotingEvent event = getVotingEventById(eventId);
         if (!event.getCreator().getId().equals(userId))
         {
-            throw new ForbiddenException("You are not allowed to access this resource with ID: " + id);
+            throw new ForbiddenException("You are not allowed to access this resource");
         }
         return makeVotingEventOut(event);
     }

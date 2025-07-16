@@ -69,9 +69,8 @@ public class UserAppService
         );
     }
     
-    public UserOut patchUser(UserPatchInput patch , String id, String userId) {
-        UserApp user = this.getUserById(id);
-        
+    public UserOut patchUser(UserPatchInput patch, String userId) {
+        UserApp user = this.getUserById(userId);
         validateUser(user.getId(), userId);
         
         if (patch.name() != null) {

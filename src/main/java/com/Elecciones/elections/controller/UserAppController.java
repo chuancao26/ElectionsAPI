@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserAppController
 {
-    private UserAppService userAppService;
+    private final UserAppService userAppService;
     
     public UserAppController(UserAppService userAppService)
     {
@@ -45,13 +45,12 @@ public class UserAppController
         this.userAppService.deleteUser(id, userPrincipal.getId());
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping()
     public ResponseEntity<UserOut> patchUser(
-            @PathVariable String id,
             @RequestBody UserPatchInput patchUser,
             @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
-        UserOut updated = this.userAppService.patchUser(patchUser, id, userPrincipal.getId());
+        UserOut updated = this.userAppService.patchUser(patchUser, userPrincipal.getId());
         return ResponseEntity.ok(updated);
     }
     

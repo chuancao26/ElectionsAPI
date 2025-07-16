@@ -1,10 +1,7 @@
 package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.domain.UserApp;
-import com.Elecciones.elections.dto.GoogleLoginRequest;
-import com.Elecciones.elections.dto.LoginResponse;
-import com.Elecciones.elections.dto.UserInput;
-import com.Elecciones.elections.dto.UserOut;
+import com.Elecciones.elections.dto.*;
 import com.Elecciones.elections.repository.UserAppRepository;
 import com.Elecciones.elections.security.JwtService;
 import com.Elecciones.elections.security.JwtUtils;
@@ -54,14 +51,9 @@ public class AuthService {
                 user.name()
         );
     }
-    public LoginResponse loginWithGoogleFake()
+    public LoginResponse loginDev(DevUser dev)
     {
-        UserApp user = new UserApp();
-        user.setId("id1");
-        user.setName("name");
-        user.setEmail("email1");
-        user.setPhoto("photo1");
-        UserInput userInput = new UserInput("id1", "name", "email1", "photo1");
+        UserInput userInput = new UserInput(dev.id(), "name", dev.email(), "photo1");
         UserOut userOut = userAppService.createUser(userInput);
         
         String token = jwtService.generateToken(userOut);

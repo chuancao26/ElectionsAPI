@@ -2,6 +2,7 @@ package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.Exception.BadRequestException;
 import com.Elecciones.elections.Exception.ConflictException;
+import com.Elecciones.elections.Exception.ForbiddenException;
 import com.Elecciones.elections.domain.*;
 import com.Elecciones.elections.dto.*;
 import com.Elecciones.elections.repository.VoteRepository;
@@ -55,10 +56,24 @@ public class VoteService
                 .toList();
     }
     
-    public List<VoteOut> getAll()
+    private void validateCreator(String eventId, String creatorId)
     {
-        List<Vote> votes = voteRepository.findAll();
-        return listVoteOut(votes);
+        VotingEvent votingEvent = this.votingEventService.getVotingEventById(eventId);
+        if (!votingEvent.getCreator().getId().equals(creatorId))
+        {
+            throw new ForbiddenException("You do not have permission to access.");
+        }
+    }
+    public List<MyVote> getAllMyVotes(String voterId)
+    {
+        List<Vote> votes = voteRepository.findAll().stream().filter(
+                v -> v.getVoter().getId().equals(voterId))
+                .toList();
+        return votes.stream().map(
+                v -> new MyVote(v.getOption().getVotingEvent().getTitle(),
+                        v.getOption().getLabel(),
+                        v.getVotedAt()))
+                .toList();
     }
     
     private Vote getVoteById(Long id)
@@ -67,22 +82,30 @@ public class VoteService
                 () -> new BadRequestException("Vote not found")
         );
     }
-    public VoteOut getVoteOutById(Long id)
+    public MyVote getVoteOutById(Long id, String voterId)
     {
         Vote vote = getVoteById(id);
-        return makeVoteOut(vote);
+        if (!vote.getVoter().getId().equals(voterId))
+        {
+            throw new ForbiddenException("You do not have permission to access.");
+        }
+        return new MyVote(vote.getOption().getVotingEvent().getTitle(),
+                vote.getOption().getLabel(), vote.getVotedAt());
     }
-    public List<VoteOut> getAllByVotingEvent(String eventId)
+    public List<VoteOut> getAllByVotingEvent(String eventId, String creatorId)
     {
+        validateCreator(eventId, creatorId);
+        
         VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
         List<Vote> votes = voteRepository.findByOption_VotingEvent(votingEvent);
+        
         return listVoteOut(votes);
     }
     @Transactional
-    public VoteOut createVote(VoteInput voteInput)
+    public VoteOut createVote(Long optionId, String creatorId)
     {
-        Option option = optionService.getOptionById(voteInput.optionId());
-        UserApp userApp = userAppService.getUserById(voteInput.userId());
+        Option option = optionService.getOptionById(optionId);
+        UserApp userApp = userAppService.getUserById(creatorId);
         
         VotingEvent votingEvent = option.getVotingEvent();
         

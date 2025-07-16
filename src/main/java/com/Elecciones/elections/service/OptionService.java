@@ -52,8 +52,9 @@ public class OptionService
         );
     }
     
-    public List<OptionOut> getOptionByVoteEvent(String eventId)
+    public List<OptionOut> getOptionByVoteEvent(String eventId, String userId)
     {
+        
         VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
         
         List<Option> option = optionRepository.findByVotingEvent(votingEvent);

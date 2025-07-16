@@ -1,5 +1,6 @@
 package com.Elecciones.elections.controller;
 
+import com.Elecciones.elections.dto.DevUser;
 import com.Elecciones.elections.dto.GoogleLoginRequest;
 import com.Elecciones.elections.dto.LoginResponse;
 import com.Elecciones.elections.service.AuthService;
@@ -16,8 +17,14 @@ public class AuthController {
     
     @PostMapping("/google")
     public ResponseEntity<LoginResponse> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
-//        LoginResponse response = authService.loginWithGoogle(request);
-        LoginResponse response1 = authService.loginWithGoogleFake();
-        return ResponseEntity.ok(response1);
+        LoginResponse response = authService.loginWithGoogle(request);
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/dev")
+    public ResponseEntity<LoginResponse> loginWithDev(@RequestBody DevUser devUser)
+    {
+        LoginResponse response = authService.loginDev(devUser);
+        return ResponseEntity.ok(response);
+        
     }
 }
