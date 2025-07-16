@@ -5,6 +5,7 @@ import com.Elecciones.elections.Exception.ConflictException;
 import com.Elecciones.elections.Exception.ForbiddenException;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.domain.VotingEvent;
+import com.Elecciones.elections.domain.VotingEventStatus;
 import com.Elecciones.elections.dto.VotingEventInput;
 import com.Elecciones.elections.dto.VotingEventOut;
 import com.Elecciones.elections.repository.VotingEventRepository;
@@ -35,7 +36,8 @@ public class VotingEventService {
                 votingEvent.getStartTime(),
                 votingEvent.getEndTime(),
                 votingEvent.getCreator().getId(),
-                votingEvent.getCreator().getName()
+                votingEvent.getCreator().getName(),
+                votingEvent.getStatus()
         );
     }
     
@@ -48,7 +50,8 @@ public class VotingEventService {
                         votingEvent.getStartTime(),
                         votingEvent.getEndTime(),
                         votingEvent.getCreator().getId(),
-                        votingEvent.getCreator().getName()
+                        votingEvent.getCreator().getName(),
+                        votingEvent.getStatus()
                 ))
                 .toList();
     }
@@ -71,7 +74,7 @@ public class VotingEventService {
         VotingEvent event = getVotingEventById(eventId);
         if (!event.getCreator().getId().equals(userId))
         {
-            throw new ForbiddenException("You are not allowed to access this resource");
+            throw new ForbiddenException("You are not allowed to perform this action");
         }
         return makeVotingEventOut(event);
     }
@@ -109,7 +112,7 @@ public class VotingEventService {
         VotingEvent event = this.getVotingEventById(id);
         if (!event.getCreator().getId().equals(userId))
         {
-            throw new ForbiddenException("VotingEvent does not exist with ID: " + id);
+            throw new ForbiddenException("You are not allowed to perform this action");
         }
         if (patch.title() != null) {
             event.setTitle(patch.title());
@@ -137,7 +140,7 @@ public class VotingEventService {
         VotingEvent event = this.getVotingEventById(id);
         if (!event.getCreator().getId().equals(userId))
         {
-            throw new ForbiddenException("VotingEvent does not exist with ID: " + id);
+            throw new ForbiddenException("You are not allowed to perform this action");
         }
         this.votingEventRepository.delete(event);
     }
@@ -145,6 +148,27 @@ public class VotingEventService {
     {
         VotingEvent event = this.getVotingEventById(eventId);
         return event.getCreator().getId().equals(creatorId);
+    }
+    
+    public void closeVotingEvent(String eventId, String creatorId)
+    {
+        if (!isVotingEventCreator(eventId, creatorId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this action");
+        }
+        VotingEvent votingEvent = this.getVotingEventById(eventId);
+        votingEvent.setStatus(VotingEventStatus.CLOSED);
+    }
+    public void openVotingEvent(String eventId, String creatorId)
+    {
+        if (!isVotingEventCreator(eventId, creatorId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this action");
+        }
+        
+        VotingEvent votingEvent = this.getVotingEventById(eventId);
+        votingEvent.setStatus(VotingEventStatus.OPENED);
+        
     }
     
 //    public VotingEventOut putVotingEvent(String id, VotingEventInput put, String creatorId)

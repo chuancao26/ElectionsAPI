@@ -1,5 +1,7 @@
 package com.Elecciones.elections.dto;
 
+import com.Elecciones.elections.domain.VotingEventStatus;
+
 import java.time.LocalDateTime;
 
 public record VotingEventOut(String id,
@@ -8,7 +10,8 @@ public record VotingEventOut(String id,
                              LocalDateTime startTime,
                              LocalDateTime endTime,
                              String userId,
-                             String userName
+                             String userName,
+                             VotingEventStatus status
                              )
 {
 }

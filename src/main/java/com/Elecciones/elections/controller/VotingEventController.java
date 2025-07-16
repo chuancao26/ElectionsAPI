@@ -64,6 +64,20 @@ public class VotingEventController {
     {
         this.votingEventService.deleteVotingEvent(id, user.getId());
     }
+    @PatchMapping("/open/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void openVotingEvent(@PathVariable String id,
+                                                          @AuthenticationPrincipal UserPrincipal user)
+    {
+        this.votingEventService.openVotingEvent(id, user.getId());
+    }
+    @PatchMapping("/close/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void closeVotingEvent(@PathVariable String id,
+                                @AuthenticationPrincipal UserPrincipal user)
+    {
+        this.votingEventService.closeVotingEvent(id, user.getId());
+    }
 //    @PutMapping("/{id}/{creatorId}")
 //    public ResponseEntity<VotingEventOut> putVotingEvent(
 //            @PathVariable String id,
