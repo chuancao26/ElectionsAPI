@@ -20,6 +20,7 @@ public class Option
     private Long id;
     private String label;
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime modifiedAt = LocalDateTime.now();
     
     @ManyToOne
     @JoinColumn(name = "voting_event_id")

@@ -1,16 +1,14 @@
 package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.Exception.ConflictException;
+import com.Elecciones.elections.Exception.ForbiddenException;
 import com.Elecciones.elections.Exception.ResourceNotFoundException;
 import com.Elecciones.elections.domain.Option;
 import com.Elecciones.elections.domain.VotingEvent;
 import com.Elecciones.elections.dto.OptionInput;
 import com.Elecciones.elections.dto.OptionOut;
 import com.Elecciones.elections.repository.OptionRepository;
-import com.Elecciones.elections.repository.VotingEventRepository;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,17 +16,14 @@ import java.util.List;
 
 
 @Service
+@AllArgsConstructor
 public class OptionService
 {
     
     private final OptionRepository optionRepository;
+    private final ParticipantService participantService;
     private final VotingEventService votingEventService;
-    private final Logger log = LoggerFactory.getLogger(OptionService.class);
     
-    public OptionService(OptionRepository optionRepository, VotingEventService votingEventService) {
-        this.optionRepository = optionRepository;
-        this.votingEventService = votingEventService;
-    }
     private List<OptionOut> listOptionOut(List<Option> options)
     {
         return options.stream()
@@ -51,20 +46,45 @@ public class OptionService
                 option.getVotingEvent().getTitle()
         );
     }
-    
+    public Option getOptionById(Long id) {
+        return this.optionRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Option does not exist with ID: " + id)
+        );
+    }
+    public OptionOut getOptionOutById(Long id, String userId)
+    {
+        Option option = this.getOptionById(id);
+        if (!votingEventService.isVotingEventCreator(option.getVotingEvent().getId(), userId))
+        {
+            if (!participantService.isParticipant(userId, option.getVotingEvent().getId()))
+            {
+                throw new ForbiddenException("You are not participant or creator of this event");
+            }
+        }
+        return makeOptionOut(option);
+    }
     public List<OptionOut> getOptionByVoteEvent(String eventId, String userId)
     {
-        
         VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
+        if (!votingEventService.isVotingEventCreator(eventId, userId))
+        {
+            if (!participantService.isParticipant(userId, votingEvent.getId()))
+            {
+                throw new ForbiddenException("You are not participant or creator of this event");
+            }
+        }
         
         List<Option> option = optionRepository.findByVotingEvent(votingEvent);
-        
         return listOptionOut(option);
     }
     
-    public OptionOut createOption(OptionInput optionInput, String votingEventId)
+    public OptionOut createOption(OptionInput optionInput, String creatorId)
     {
-        VotingEvent votingEvent = this.votingEventService.getVotingEventById(votingEventId);
+        VotingEvent votingEvent = this.votingEventService.getVotingEventById(optionInput.eventId());
+        if (!votingEventService.isVotingEventCreator(votingEvent.getId(), creatorId ))
+        {
+            throw new ForbiddenException("You are not allowed");
+        }
         
         if (votingEventService.isBetweenTimeRanges(votingEvent))
         {
@@ -77,47 +97,48 @@ public class OptionService
         return makeOptionOut(this.optionRepository.save(option));
     }
     
-    public void deleteOption(Long id) {
+    public void deleteOption(Long id, String creatorId)
+    {
         Option option = this.getOptionById(id);
+        if (!votingEventService.isVotingEventCreator(option.getVotingEvent().getId(), creatorId ))
+        {
+            throw new ForbiddenException("You are not allowed to perform this operation");
+        }
         this.optionRepository.delete(option);
     }
     
-    public OptionOut getOptionOutById(Long id) {
-        Option option = this.optionRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Option does not exist with ID: " + id)
-        );
-        return makeOptionOut(option);
-    }
-    public Option getOptionById(Long id) {
-        Option option = this.optionRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Option does not exist with ID: " + id)
-        );
-        return option;
-    }
     
     
-    public Option patchOption(Long id, Option patch) {
+    public OptionOut patchOption(Long id, OptionInput patch, String creatorId)
+    {
         Option option = this.getOptionById(id);
-        
-        if (patch.getLabel() != null) {
-            option.setLabel(patch.getLabel());
+        if (!votingEventService.isVotingEventCreator(option.getVotingEvent().getId(), creatorId ))
+        {
+            throw new ForbiddenException("You are not allowed to perform this operation");
         }
-        return this.optionRepository.save(option);
+        
+        if (patch.label() != null) {
+            option.setLabel(patch.label());
+        }
+        
+        option.setModifiedAt(LocalDateTime.now());
+        
+        return makeOptionOut(this.optionRepository.save(option));
     }
     
-    public Option putOption(Long id, Option putOption, String votingEventId) {
-        Option option = this.getOptionById(id);
-        
-        VotingEvent votingEvent = this.votingEventService.getVotingEventById(votingEventId);
-        
-        putOption.setId(id);
-        putOption.setCreatedAt(option.getCreatedAt());
-        putOption.setVotingEvent(votingEvent);
-        
-        return this.optionRepository.save(putOption);
-    }
-    public List<OptionOut> getAllOptions() {
-        List<OptionOut> options = listOptionOut(this.optionRepository.findAll());
-        return options;
-    }
+//    public Option putOption(Long id, Option putOption, String votingEventId) {
+//        Option option = this.getOptionById(id);
+//
+//        VotingEvent votingEvent = this.votingEventService.getVotingEventById(votingEventId);
+//
+//        putOption.setId(id);
+//        putOption.setCreatedAt(option.getCreatedAt());
+//        putOption.setVotingEvent(votingEvent);
+//
+//        return this.optionRepository.save(putOption);
+//    }
+//    public List<OptionOut> getAllOptions() {
+//        List<OptionOut> options = listOptionOut(this.optionRepository.findAll());
+//        return options;
+//    }
 }

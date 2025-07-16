@@ -62,7 +62,7 @@ public class ParticipantService
         return makeParticipantOut(participant);
     }
     
-    public List<ParticipantOut> getParticipantsByEventId(String eventId)
+    public List<ParticipantOut> getParticipantsOutByEventId(String eventId)
     {
         VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
         List<Participant> participants = participantRepository.findByVotingEvent(votingEvent);
@@ -139,5 +139,11 @@ public class ParticipantService
         participant.setStatus(Status.VOTED);
         participantRepository.save(participant);
         return makeParticipantOut(participant);
+    }
+    public boolean isParticipant(String userId, String eventId)
+    {
+        VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
+        return this.participantRepository.findByVotingEvent(votingEvent).stream().anyMatch(
+                v -> v.getUser().getId().equals(userId));
     }
 }

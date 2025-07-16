@@ -141,6 +141,11 @@ public class VotingEventService {
         }
         this.votingEventRepository.delete(event);
     }
+    public boolean isVotingEventCreator(String eventId, String creatorId)
+    {
+        VotingEvent event = this.getVotingEventById(eventId);
+        return event.getCreator().getId().equals(creatorId);
+    }
     
 //    public VotingEventOut putVotingEvent(String id, VotingEventInput put, String creatorId)
 //    {
