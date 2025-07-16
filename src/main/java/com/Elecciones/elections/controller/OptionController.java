@@ -1,6 +1,5 @@
 package com.Elecciones.elections.controller;
 
-import com.Elecciones.elections.domain.Option;
 import com.Elecciones.elections.dto.OptionInput;
 import com.Elecciones.elections.dto.OptionOut;
 import com.Elecciones.elections.security.UserPrincipal;
@@ -12,7 +11,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/option", produces = "application/json")

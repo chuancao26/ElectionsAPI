@@ -1,10 +1,11 @@
 package com.Elecciones.elections.controller;
 
-import com.Elecciones.elections.dto.ParticipantInput;
 import com.Elecciones.elections.dto.ParticipantOut;
+import com.Elecciones.elections.security.UserPrincipal;
 import com.Elecciones.elections.service.ParticipantService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,29 +21,34 @@ public class ParticipantController
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<ParticipantOut> getParticipantById(@PathVariable Long id)
+    public ResponseEntity<ParticipantOut> getParticipantById(@PathVariable Long id,
+                                                             @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
-        ParticipantOut participantOut = participantService.getParticipantOutById(id);
+        ParticipantOut participantOut = participantService.getParticipantOutById(id, userPrincipal.getId());
         return new ResponseEntity<>(participantOut, HttpStatus.OK);
     }
     @GetMapping("/voting-event/{id}")
-    public ResponseEntity<List<ParticipantOut>> getParticipantsByVotingEventId(@PathVariable("id") String id)
+    public ResponseEntity<List<ParticipantOut>> getParticipantsByVotingEventId(@PathVariable("id") String id,
+                                                             @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
-        List<ParticipantOut> participants = participantService.getParticipantsOutByEventId(id);
+        List<ParticipantOut> participants = participantService.getParticipantsOutByEventId(id, userPrincipal.getId());
         return new ResponseEntity<>(participants, HttpStatus.OK);
     }
     
-    @PostMapping
-    public ResponseEntity<ParticipantOut> createParticipant(@RequestBody ParticipantInput participant)
+    @PostMapping("/voting-event/{votingId}")
+    public ResponseEntity<ParticipantOut> createParticipant(@PathVariable("votingId") String votingId,
+                                                           @AuthenticationPrincipal UserPrincipal userPrincipal
+                                                            )
     {
-        ParticipantOut newParticipant = participantService.createParticipant(participant);
+        ParticipantOut newParticipant = participantService.createParticipant(votingId, userPrincipal.getId());
         return new ResponseEntity<>(newParticipant, HttpStatus.CREATED);
     }
     
     @PostMapping("/ban")
-    public ResponseEntity<ParticipantOut> banParticipant(@RequestBody Long id)
+    public ResponseEntity<ParticipantOut> banParticipant(@RequestBody Long id,
+                                                         @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
-        ParticipantOut participantOut = participantService.setBanParticipant(id);
+        ParticipantOut participantOut = participantService.setBanParticipant(id, userPrincipal.getId());
         return new ResponseEntity<>(participantOut, HttpStatus.OK);
     }
     

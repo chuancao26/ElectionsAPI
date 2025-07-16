@@ -1,30 +1,26 @@
 package com.Elecciones.elections.service;
 
 import com.Elecciones.elections.Exception.ConflictException;
+import com.Elecciones.elections.Exception.ForbiddenException;
 import com.Elecciones.elections.Exception.ResourceNotFoundException;
 import com.Elecciones.elections.domain.*;
-import com.Elecciones.elections.dto.ParticipantInput;
 import com.Elecciones.elections.dto.ParticipantOut;
 import com.Elecciones.elections.repository.ParticipantRepository;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class ParticipantService
 {
     private final ParticipantRepository participantRepository;
     private final UserAppService userAppService;
     private final VotingEventService votingEventService;
     
-    public ParticipantService(ParticipantRepository participantRepository, UserAppService userAppService, VotingEventService votingEventService)
-    {
-        this.participantRepository = participantRepository;
-        this.userAppService = userAppService;
-        this.votingEventService = votingEventService;
-    }
     private ParticipantOut makeParticipantOut(Participant participant)
     {
         return new ParticipantOut(
@@ -50,34 +46,55 @@ public class ParticipantService
                         ))
                 .toList();
     }
+    
     private Participant getParticipantById(Long id)
     {
         return participantRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("There is no participant with id: " + id)
         );
     }
-    public ParticipantOut getParticipantOutById(Long id)
+    public ParticipantOut getParticipantOutById(Long id, String userID)
     {
         Participant participant = getParticipantById(id);
+        if (!votingEventService.isVotingEventCreator(participant.getVotingEvent().getId(), userID))
+        {
+            if (!participant.getUser().getId().equals(userID))
+            {
+                throw new ForbiddenException("You are not allowed to perform this operation");
+            }
+        }
         return makeParticipantOut(participant);
     }
     
-    public List<ParticipantOut> getParticipantsOutByEventId(String eventId)
+    public List<ParticipantOut> getParticipantsOutByEventId(String eventId, String creatorId)
     {
+        if (!votingEventService.isVotingEventCreator(eventId, creatorId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this operation");
+        }
         VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
+        
         List<Participant> participants = participantRepository.findByVotingEvent(votingEvent);
+        
         return listParticipantOut(participants);
     }
     
-    public ParticipantOut createParticipant(ParticipantInput participant)
+    // inscribirse
+    public ParticipantOut createParticipant(String eventId, String userId)
     {
-        VotingEvent votingEvent = votingEventService.getVotingEventById(participant.eventId());
+        if (votingEventService.isVotingEventCreator(eventId, userId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this operation");
+        }
+        
+        VotingEvent votingEvent = votingEventService.getVotingEventById(eventId);
         if (votingEvent.getStatus() == VotingEventStatus.CLOSED)
         {
             throw new ConflictException("Voting Event is closed");
         }
-        UserApp userApp = userAppService.getUserById(participant.userId());
-        Optional<Participant> existedParticipant =participantRepository.findByUserAndVotingEvent(userApp, votingEvent);
+        UserApp userApp = userAppService.getUserById(userId);
+        
+        Optional<Participant> existedParticipant = participantRepository.findByUserAndVotingEvent(userApp, votingEvent);
         
         if (existedParticipant.isPresent())
         {
@@ -89,16 +106,19 @@ public class ParticipantService
         newParticipant.setUser(userApp);
         newParticipant.setStatus(Status.PENDING);
         
-        participantRepository.save(newParticipant);
-        return makeParticipantOut(newParticipant);
+        return makeParticipantOut(participantRepository.save(newParticipant));
     }
     
-    public ParticipantOut setBanParticipant(Long id)
+    public ParticipantOut setBanParticipant(Long id, String creatorId)
     {
         Participant currentParticipant = this.getParticipantById(id);
+        if (!votingEventService.isVotingEventCreator(currentParticipant.getVotingEvent().getId(), creatorId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this operation");
+        }
         currentParticipant.setStatus(Status.BANNED);
-        participantRepository.save(currentParticipant);
-        return makeParticipantOut(currentParticipant);
+        
+        return makeParticipantOut(participantRepository.save(currentParticipant));
     }
     
 //    public ParticipantOut setVotedParticipant(Long id)
@@ -134,11 +154,10 @@ public class ParticipantService
         }
         return participant;
     }
-    public ParticipantOut markAsVoted(Participant participant)
+    public void markAsVoted(Participant participant)
     {
         participant.setStatus(Status.VOTED);
         participantRepository.save(participant);
-        return makeParticipantOut(participant);
     }
     public boolean isParticipant(String userId, String eventId)
     {
