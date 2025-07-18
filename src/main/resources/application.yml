@@ -4,10 +4,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-  datasource:
-    url: jdbc:postgresql://localhost:5432/elections
     driver-class-name: org.postgresql.Driver
   application:
     name: elections
+
+
+#logging:
+#  level:
+#    root: DEBUG
 server:
   port: 8001

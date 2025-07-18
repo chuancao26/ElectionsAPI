@@ -1,28 +1,30 @@
 package com.Elecciones.elections.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
-public class Vote
+@AllArgsConstructor
+public class Participant
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Status status;
     
     @ManyToOne
-    @JoinColumn(name = "voter_id")
-    private UserApp voter;
+    @JoinColumn(name = "user_id")
+    @JsonBackReference
+    private UserApp user;
     
     @ManyToOne
-    @JoinColumn(name = "option_id")
-    private Option option;
-    private LocalDateTime votedAt;
+    @JoinColumn(name = "voting_event_id")
+    @JsonBackReference
+    private VotingEvent votingEvent;
 }

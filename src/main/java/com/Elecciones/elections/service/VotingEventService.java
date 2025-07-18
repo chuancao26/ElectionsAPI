@@ -1,8 +1,13 @@
 package com.Elecciones.elections.service;
 
+import com.Elecciones.elections.Exception.BadRequestException;
+import com.Elecciones.elections.Exception.ConflictException;
+import com.Elecciones.elections.Exception.ForbiddenException;
 import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.domain.VotingEvent;
-import com.Elecciones.elections.repository.UserAppRepository;
+import com.Elecciones.elections.domain.VotingEventStatus;
+import com.Elecciones.elections.dto.VotingEventInput;
+import com.Elecciones.elections.dto.VotingEventOut;
 import com.Elecciones.elections.repository.VotingEventRepository;
 
 import org.slf4j.Logger;
@@ -10,68 +15,116 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
-public class VotingEventService
-{
+public class VotingEventService {
     private final VotingEventRepository votingEventRepository;
-    private final UserAppRepository userAppRepository;
+    private final UserAppService userAppService;
     private final Logger log = LoggerFactory.getLogger(VotingEventService.class);
     
-    public VotingEventService(VotingEventRepository votingEventRepository, UserAppRepository userAppRepository) {
+    public VotingEventService(VotingEventRepository votingEventRepository, UserAppService userAppService) {
         this.votingEventRepository = votingEventRepository;
-        this.userAppRepository = userAppRepository;
+        this.userAppService = userAppService;
     }
     
-    public Iterable<VotingEvent> getAllVotingEvents() {
-        this.log.info("Get all voting events");
-        return this.votingEventRepository.findAll();
+    private VotingEventOut makeVotingEventOut(VotingEvent votingEvent) {
+        return new VotingEventOut(
+                votingEvent.getId(),
+                votingEvent.getTitle(),
+                votingEvent.getDescription(),
+                votingEvent.getStartTime(),
+                votingEvent.getEndTime(),
+                votingEvent.getCreator().getId(),
+                votingEvent.getCreator().getName(),
+                votingEvent.getStatus()
+        );
     }
     
-    private VotingEvent existVotingEventById(String id) {
-        VotingEvent event = this.votingEventRepository.findById(id).orElse(null);
-        if (event == null) {
-            throw new RuntimeException("VotingEvent does not exist with ID: " + id);
+    private List<VotingEventOut> listVotingEventOut(List<VotingEvent> votingEvents) {
+        return votingEvents.stream()
+                .map(votingEvent -> new VotingEventOut(
+                        votingEvent.getId(),
+                        votingEvent.getTitle(),
+                        votingEvent.getDescription(),
+                        votingEvent.getStartTime(),
+                        votingEvent.getEndTime(),
+                        votingEvent.getCreator().getId(),
+                        votingEvent.getCreator().getName(),
+                        votingEvent.getStatus()
+                ))
+                .toList();
+    }
+    
+    public List<VotingEventOut> getAllVotingEvents(String userId) {
+        return listVotingEventOut(this.votingEventRepository.findAll().stream()
+                .filter(v -> v.getCreator().getId().equals(userId))
+                .toList());
+    }
+    
+    public VotingEvent getVotingEventById(String id)
+    {
+        return this.votingEventRepository.findById(id).orElseThrow(
+                () -> new ConflictException("VotingEvent does not exist with ID: " + id)
+        );
+    }
+    
+    public VotingEventOut getVotingEventOutById(String eventId, String userId)
+    {
+        VotingEvent event = getVotingEventById(eventId);
+        if (!event.getCreator().getId().equals(userId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this action");
         }
-        return event;
+        return makeVotingEventOut(event);
     }
     
-    public VotingEvent getVotingEventById(String id) {
-        return this.existVotingEventById(id);
-    }
-    
-    public VotingEvent createVotingEvent(VotingEvent votingEvent, String creatorId) {
-        this.log.info("Create voting event with title: {}", votingEvent.getTitle());
-        
-        if (votingEvent.getStartTime() != null && votingEvent.getEndTime() != null &&
-                votingEvent.getStartTime().isAfter(votingEvent.getEndTime())) {
-            throw new IllegalArgumentException("Start time cannot be after end time");
+    public VotingEventOut createVotingEvent(VotingEventInput votingEventInput, String creatorId)
+    {
+        if (votingEventInput.startTime() != null && votingEventInput.endTime() != null &&
+                votingEventInput.startTime().isAfter(votingEventInput.endTime())) {
+            throw new BadRequestException("Start time cannot be after end time");
         }
-        
-        UserApp creator = userAppRepository.findById(creatorId)
-                .orElseThrow(() -> new RuntimeException("Creator user not found with ID: " + creatorId));
+        UserApp creator = userAppService.getUserById(creatorId);
+        VotingEvent votingEvent = new VotingEvent(votingEventInput);
         
         votingEvent.setId(java.util.UUID.randomUUID().toString());
-        votingEvent.setCreatedAt(LocalDateTime.now());
         votingEvent.setCreator(creator);
         
-        return this.votingEventRepository.save(votingEvent);
+        return makeVotingEventOut(this.votingEventRepository.save(votingEvent));
     }
     
-    public VotingEvent patchVotingEvent(String id, VotingEvent patch) {
-        VotingEvent event = this.existVotingEventById(id);
-        
-        if (patch.getTitle() != null) {
-            event.setTitle(patch.getTitle());
+    public boolean isBetweenTimeRanges(VotingEvent votingEvent) {
+        LocalDateTime now = LocalDateTime.now();
+        if (votingEvent.getStartTime() != null && now.isBefore(votingEvent.getStartTime())) {
+            return false;
         }
-        if (patch.getDescription() != null) {
-            event.setDescription(patch.getDescription());
+        if (votingEvent.getEndTime() != null && now.isAfter(votingEvent.getEndTime())) {
+            return false;
         }
-        if (patch.getStartTime() != null) {
-            event.setStartTime(patch.getStartTime());
+        return true;
+    }
+    
+    public VotingEventOut patchVotingEvent(String id,
+                                           String userId,
+                                           VotingEventInput patch)
+    {
+        VotingEvent event = this.getVotingEventById(id);
+        if (!event.getCreator().getId().equals(userId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this action");
         }
-        if (patch.getEndTime() != null) {
-            event.setEndTime(patch.getEndTime());
+        if (patch.title() != null) {
+            event.setTitle(patch.title());
+        }
+        if (patch.description() != null) {
+            event.setDescription(patch.description());
+        }
+        if (patch.startTime() != null) {
+            event.setStartTime(patch.startTime());
+        }
+        if (patch.endTime() != null) {
+            event.setEndTime(patch.endTime());
         }
         
         if (event.getStartTime() != null && event.getEndTime() != null &&
@@ -79,30 +132,61 @@ public class VotingEventService
             throw new IllegalArgumentException("Start time cannot be after end time");
         }
         
-        return this.votingEventRepository.save(event);
+        return makeVotingEventOut(this.votingEventRepository.save(event));
     }
     
-    public VotingEvent putVotingEvent(String id, VotingEvent putVotingEvent, String creatorId) {
-        VotingEvent event = this.existVotingEventById(id);
-        
-        UserApp creator = userAppRepository.findById(creatorId)
-                .orElseThrow(() -> new RuntimeException("Creator user not found with ID: " + creatorId));
-        
-        putVotingEvent.setId(id);
-        putVotingEvent.setCreatedAt(event.getCreatedAt());
-        putVotingEvent.setCreator(creator);
-        
-        if (putVotingEvent.getStartTime() != null && putVotingEvent.getEndTime() != null &&
-                putVotingEvent.getStartTime().isAfter(putVotingEvent.getEndTime())) {
-            throw new IllegalArgumentException("Start time cannot be after end time");
+    public void deleteVotingEvent(String id, String userId)
+    {
+        VotingEvent event = this.getVotingEventById(id);
+        if (!event.getCreator().getId().equals(userId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this action");
+        }
+        this.votingEventRepository.delete(event);
+    }
+    public boolean isVotingEventCreator(String eventId, String creatorId)
+    {
+        VotingEvent event = this.getVotingEventById(eventId);
+        return event.getCreator().getId().equals(creatorId);
+    }
+    
+    public void closeVotingEvent(String eventId, String creatorId)
+    {
+        if (!isVotingEventCreator(eventId, creatorId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this action");
+        }
+        VotingEvent votingEvent = this.getVotingEventById(eventId);
+        votingEvent.setStatus(VotingEventStatus.CLOSED);
+    }
+    public void openVotingEvent(String eventId, String creatorId)
+    {
+        if (!isVotingEventCreator(eventId, creatorId))
+        {
+            throw new ForbiddenException("You are not allowed to perform this action");
         }
         
-        return this.votingEventRepository.save(putVotingEvent);
+        VotingEvent votingEvent = this.getVotingEventById(eventId);
+        votingEvent.setStatus(VotingEventStatus.OPENED);
+        
     }
     
-    public void deleteVotingEvent(String id) {
-        VotingEvent event = this.existVotingEventById(id);
-        this.votingEventRepository.delete(event);
-        this.log.info("Deleted voting event with id {}", id);
-    }
+//    public VotingEventOut putVotingEvent(String id, VotingEventInput put, String creatorId)
+//    {
+//        VotingEvent event = this.getVotingEventById(id);
+//
+//        UserApp creator = userAppService.getUserById(creatorId);
+//
+//        VotingEvent putVotingEvent= new VotingEvent(put);
+//        putVotingEvent.setId(id);
+//        putVotingEvent.setCreatedAt(event.getCreatedAt());
+//        putVotingEvent.setCreator(creator);
+//
+//        if (putVotingEvent.getStartTime() != null && putVotingEvent.getEndTime() != null &&
+//                putVotingEvent.getStartTime().isAfter(putVotingEvent.getEndTime())) {
+//            throw new IllegalArgumentException("Start time cannot be after end time");
+//        }
+//
+//        return makeVotingEventOut(this.votingEventRepository.save(putVotingEvent));
+//    }
 }

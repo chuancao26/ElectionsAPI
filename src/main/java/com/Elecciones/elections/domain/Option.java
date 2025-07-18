@@ -1,5 +1,7 @@
 package com.Elecciones.elections.domain;
 
+import com.Elecciones.elections.dto.OptionInput;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +20,15 @@ public class Option
     private Long id;
     private String label;
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime modifiedAt = LocalDateTime.now();
+    
     @ManyToOne
     @JoinColumn(name = "voting_event_id")
+    @JsonBackReference
     private VotingEvent votingEvent;
+    
+    public Option(OptionInput optionInput)
+    {
+        this.label = optionInput.label();
+    }
 }

@@ -1,12 +1,15 @@
 package com.Elecciones.elections.controller;
 
-import com.Elecciones.elections.domain.VotingEvent;
+import com.Elecciones.elections.dto.VotingEventInput;
+import com.Elecciones.elections.dto.VotingEventOut;
+import com.Elecciones.elections.security.UserPrincipal;
 import com.Elecciones.elections.service.VotingEventService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api/voting-event", produces = "application/json")
@@ -20,73 +23,70 @@ public class VotingEventController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getVotingEvent(@PathVariable("id") String id) {
-        try {
-            VotingEvent event = this.votingEventService.getVotingEventById(id);
-            return new ResponseEntity<>(event, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            log.error("Error getting voting event", e);
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
-        }
+    public ResponseEntity<VotingEventOut> getVotingEvent(@PathVariable("id") String id,
+                                                         @AuthenticationPrincipal UserPrincipal user)
+    {
+        VotingEventOut event = this.votingEventService.getVotingEventOutById(id, user.getId());
+        return new ResponseEntity<>(event, HttpStatus.OK);
     }
     
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Iterable<VotingEvent> getVotingEvents() {
-        return this.votingEventService.getAllVotingEvents();
+    public List<VotingEventOut> getVotingEvents(@AuthenticationPrincipal UserPrincipal user) {
+        return this.votingEventService.getAllVotingEvents(user.getId());
     }
     
-    @PostMapping(path = "/{creatorId}", consumes = "application/json")
+    @PostMapping(consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> createVotingEvent(
-            @PathVariable String creatorId,
-            @RequestBody VotingEvent votingEvent
-    ) {
-        try {
-            VotingEvent created = this.votingEventService.createVotingEvent(votingEvent, creatorId);
-            return new ResponseEntity<>(created, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            log.error("Error creating voting event", e);
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
-        }
+    public ResponseEntity<VotingEventOut> createVotingEvent(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody VotingEventInput votingEventInput)
+    {
+        VotingEventOut created = this.votingEventService.createVotingEvent(votingEventInput,
+                user.getId());
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
     
     @PatchMapping("/{id}")
-    public ResponseEntity<?> patchVotingEvent(
+    public ResponseEntity<VotingEventOut> patchVotingEvent(
             @PathVariable String id,
-            @RequestBody VotingEvent patch
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody VotingEventInput patch
     ) {
-        try {
-            VotingEvent updated = this.votingEventService.patchVotingEvent(id, patch);
-            return new ResponseEntity<>(updated, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.NOT_FOUND);
-        }
-    }
-    
-    @PutMapping("/{id}/{creatorId}")
-    public ResponseEntity<?> putVotingEvent(
-            @PathVariable String id,
-            @PathVariable String creatorId,
-            @RequestBody VotingEvent putVotingEvent
-    ) {
-        try {
-            VotingEvent updated = this.votingEventService.putVotingEvent(id, putVotingEvent, creatorId);
-            return new ResponseEntity<>(updated, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.NOT_FOUND);
-        }
+        VotingEventOut updated = this.votingEventService.patchVotingEvent(id, user.getId(), patch);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
     }
     
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteVotingEvent(@PathVariable String id) {
-        try {
-            this.votingEventService.deleteVotingEvent(id);
-        } catch (RuntimeException e) {
-            log.error("Error deleting voting event", e);
-        }
+    public void deleteVotingEvent(@PathVariable String id,
+                                  @AuthenticationPrincipal UserPrincipal user)
+    {
+        this.votingEventService.deleteVotingEvent(id, user.getId());
     }
+    @PatchMapping("/open/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void openVotingEvent(@PathVariable String id,
+                                                          @AuthenticationPrincipal UserPrincipal user)
+    {
+        this.votingEventService.openVotingEvent(id, user.getId());
+    }
+    @PatchMapping("/close/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void closeVotingEvent(@PathVariable String id,
+                                @AuthenticationPrincipal UserPrincipal user)
+    {
+        this.votingEventService.closeVotingEvent(id, user.getId());
+    }
+//    @PutMapping("/{id}/{creatorId}")
+//    public ResponseEntity<VotingEventOut> putVotingEvent(
+//            @PathVariable String id,
+//            @PathVariable String creatorId,
+//            @RequestBody VotingEventInput putVotingEvent
+//    )
+//    {
+//        VotingEventOut updated = this.votingEventService.putVotingEvent(id, putVotingEvent, creatorId);
+//        return new ResponseEntity<>(updated, HttpStatus.OK);
+//    }
+    
 }
