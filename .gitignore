@@ -37,3 +37,4 @@ build/
 # Ignorar entorno virtual de Python
 chatbot/venv/
 chatbot/api_key.txt
+chatbot/contexto.txt
