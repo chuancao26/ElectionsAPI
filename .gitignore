@@ -38,3 +38,4 @@ build/
 chatbot/venv/
 chatbot/api_key.txt
 chatbot/contexto.txt
+chatbot/.env

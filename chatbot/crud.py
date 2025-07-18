@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
-from models import Candidato, Eleccion
 
-def obtener_candidatos(db: Session):
-    return db.query(Candidato).all()
-
-def obtener_eleccion(db: Session, eleccion_id: int):
-    return db.query(Eleccion).filter(Eleccion.id == eleccion_id).first()
+def obtener_candidatos(db: Session) -> str:
+    result = db.execute("SELECT * FROM voting_event")
+    candidatos = result.fetchall()
+    if not candidatos:
+        return "No hay candidatos registrados."
+    
+    return "\n".join(f"- {nombre}" for nombre in candidatos)
