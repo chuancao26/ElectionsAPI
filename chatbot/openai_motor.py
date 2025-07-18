@@ -3,11 +3,6 @@ from openai import OpenAI
 with open("api_key.txt", "r") as f:
     api_key2 = f.read().strip()
     
-def construir_contexto(candidatos):
-    contexto = ""
-    for candidato in candidatos:
-        contexto += f"Candidato: {candidato.nombre}, Elección: {candidato.eleccion.nombre}\n"
-    return contexto
 
 def consultar(pregunta: str, contexto: str):
     client = OpenAI(api_key=api_key2, base_url="https://openrouter.ai/api/v1")
