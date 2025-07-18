@@ -1,8 +1,8 @@
-### UNIVOTE 🗳️
+### JustVote 🗳️
 
 ## 📌 Propuesta
 
-UNIVOTE es un sistema web que:
+JustVote es un sistema web que:
 
 - Centraliza la gestión de eventos electorales, permitiendo organizar todo tipo de votaciones, desde elecciones formales (como centros de estudiantes, consejos facultativos, etc.) hasta votaciones más informales o temáticas (como elección de sabores de helado, temas de exposición, representantes por actividad, etc.).
 
