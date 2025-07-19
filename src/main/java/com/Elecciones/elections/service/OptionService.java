@@ -107,8 +107,6 @@ public class OptionService
         this.optionRepository.delete(option);
     }
     
-    
-    
     public OptionOut patchOption(Long id, OptionInput patch, String creatorId)
     {
         Option option = this.getOptionById(id);
@@ -126,19 +124,4 @@ public class OptionService
         return makeOptionOut(this.optionRepository.save(option));
     }
     
-//    public Option putOption(Long id, Option putOption, String votingEventId) {
-//        Option option = this.getOptionById(id);
-//
-//        VotingEvent votingEvent = this.votingEventService.getVotingEventById(votingEventId);
-//
-//        putOption.setId(id);
-//        putOption.setCreatedAt(option.getCreatedAt());
-//        putOption.setVotingEvent(votingEvent);
-//
-//        return this.optionRepository.save(putOption);
-//    }
-//    public List<OptionOut> getAllOptions() {
-//        List<OptionOut> options = listOptionOut(this.optionRepository.findAll());
-//        return options;
-//    }
 }

@@ -21,12 +21,12 @@ public class GoogleOAuthService {
     
     private final RestTemplate restTemplate = new RestTemplate();
     
-    public GoogleTokenResponse exchangeCodeForTokens(String code, String codeVerifier, String redirectUri) {
+    public GoogleTokenResponse exchangeCodeForTokens(String code, String redirectUri)
+    {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("client_id", clientId);
         params.add("client_secret", clientSecret);
         params.add("code", code);
-        //params.add("code_verifier", codeVerifier);
         params.add("grant_type", "authorization_code");
         params.add("redirect_uri", redirectUri);
         

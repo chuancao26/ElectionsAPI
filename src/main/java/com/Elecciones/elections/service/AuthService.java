@@ -1,33 +1,24 @@
 package com.Elecciones.elections.service;
 
-import com.Elecciones.elections.domain.UserApp;
 import com.Elecciones.elections.dto.*;
-import com.Elecciones.elections.repository.UserAppRepository;
 import com.Elecciones.elections.security.JwtService;
 import com.Elecciones.elections.security.JwtUtils;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 @Service
+@AllArgsConstructor
 public class AuthService {
     
     private final GoogleOAuthService googleOAuthService;
     private final UserAppService userAppService;
     private final JwtService jwtService;
     
-    public AuthService(GoogleOAuthService googleOAuthService, UserAppService userAppService, JwtService jwtService)
-    {
-        this.googleOAuthService = googleOAuthService;
-        this.userAppService = userAppService;
-        this.jwtService = jwtService;
-    }
-    
     public LoginResponse loginWithGoogle(GoogleLoginRequest request) {
         var googleTokens = googleOAuthService.exchangeCodeForTokens(
                 request.code(),
-                request.codeVerifier(),
                 request.redirectUri()
         );
         

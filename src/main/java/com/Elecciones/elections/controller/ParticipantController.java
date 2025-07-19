@@ -27,6 +27,12 @@ public class ParticipantController
         ParticipantOut participantOut = participantService.getParticipantOutById(id, userPrincipal.getId());
         return new ResponseEntity<>(participantOut, HttpStatus.OK);
     }
+    @GetMapping
+    public ResponseEntity<List<ParticipantOut>> getMyParticipations(@AuthenticationPrincipal UserPrincipal userPrincipal)
+    {
+        return new ResponseEntity<>(participantService.getMyParticipations(userPrincipal.getId())
+                ,HttpStatus.OK);
+    }
     @GetMapping("/voting-event/{id}")
     public ResponseEntity<List<ParticipantOut>> getParticipantsByVotingEventId(@PathVariable("id") String id,
                                                              @AuthenticationPrincipal UserPrincipal userPrincipal)

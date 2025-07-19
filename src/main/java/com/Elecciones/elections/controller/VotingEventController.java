@@ -67,7 +67,7 @@ public class VotingEventController {
     @PatchMapping("/open/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void openVotingEvent(@PathVariable String id,
-                                                          @AuthenticationPrincipal UserPrincipal user)
+                                @AuthenticationPrincipal UserPrincipal user)
     {
         this.votingEventService.openVotingEvent(id, user.getId());
     }
