@@ -154,6 +154,7 @@ public class VotingEventService {
         }
         VotingEvent votingEvent = this.getVotingEventById(eventId);
         votingEvent.setStatus(VotingEventStatus.CLOSED);
+        votingEventRepository.save(votingEvent);
     }
     public void openVotingEvent(String eventId, String creatorId)
     {
@@ -164,6 +165,7 @@ public class VotingEventService {
         
         VotingEvent votingEvent = this.getVotingEventById(eventId);
         votingEvent.setStatus(VotingEventStatus.OPENED);
+        votingEventRepository.save(votingEvent);
         
     }
     

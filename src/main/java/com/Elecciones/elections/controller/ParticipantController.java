@@ -50,8 +50,8 @@ public class ParticipantController
         return new ResponseEntity<>(newParticipant, HttpStatus.CREATED);
     }
     
-    @PostMapping("/ban")
-    public ResponseEntity<ParticipantOut> banParticipant(@RequestBody Long id,
+    @PostMapping("/ban/{id}")
+    public ResponseEntity<ParticipantOut> banParticipant(@PathVariable("id") Long id,
                                                          @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
         ParticipantOut participantOut = participantService.setBanParticipant(id, userPrincipal.getId());
