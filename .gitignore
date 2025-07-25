@@ -33,3 +33,9 @@ build/
 .vscode/
 .idea
 /src/main/resources/application-secret.yml
+
+# Ignorar entorno virtual de Python
+chatbot/venv/
+chatbot/api_key.txt
+chatbot/contexto.txt
+chatbot/.env
