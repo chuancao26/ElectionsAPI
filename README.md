@@ -48,4 +48,6 @@ JustVote es un sistema web que:
 
 <img src="diagramas/unnamed (2).png" alt="Interfaz 2" width="450px">
 
+<img src="diagramas/unnamed (3).png" alt="Interfaz 3" width="450px">
+
 ## 📌 Pruebas
