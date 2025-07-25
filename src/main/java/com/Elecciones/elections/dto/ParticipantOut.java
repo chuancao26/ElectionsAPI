@@ -9,6 +9,8 @@ public record ParticipantOut(Long id,
                              String name,
                              String votingId,
                              String votingTitle,
-                             VotingEventStatus votingEventStatus)
+                             VotingEventStatus votingEventStatus,
+                             String eventDescription)
+    
 {
 }

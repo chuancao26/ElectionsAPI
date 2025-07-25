@@ -30,7 +30,8 @@ public class ParticipantService
                 participant.getUser().getName(),
                 participant.getVotingEvent().getId(),
                 participant.getVotingEvent().getTitle(),
-                participant.getVotingEvent().getStatus()
+                participant.getVotingEvent().getStatus(),
+                participant.getVotingEvent().getDescription()
         );
     }
     private List<ParticipantOut> listParticipantOut(List<Participant> participants)
@@ -44,7 +45,8 @@ public class ParticipantService
                                 participant.getUser().getName(),
                                 participant.getVotingEvent().getId(),
                                 participant.getVotingEvent().getTitle(),
-                                participant.getVotingEvent().getStatus()
+                                participant.getVotingEvent().getStatus(),
+                                participant.getVotingEvent().getDescription()
                         ))
                 .toList();
     }
