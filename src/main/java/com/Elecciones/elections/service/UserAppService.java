@@ -10,7 +10,6 @@ import com.Elecciones.elections.repository.UserAppRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +24,7 @@ public class UserAppService
     {
         return new UserOut(userApp.getId(), userApp.getName(), userApp.getEmail());
     }
-    private List<UserOut> listUserOut(List<UserApp> userApps)
-    {
-        return userApps.stream()
-                .map(
-                        user -> new UserOut(user.getId(), user.getName(), user.getEmail())
-                )
-                .toList();
-    }
+    
     public UserAppService(UserAppRepository userAppRepository) {
         this.userAppRepository = userAppRepository;
     }
@@ -44,11 +36,6 @@ public class UserAppService
         return this.makeUserOut(userApp);
     }
     
-//    public List<UserOut> getAllUsers() {
-//        this.log.info("Get all users");
-//        List<UserApp> userApps = this.userAppRepository.findAll();
-//        return listUserOut(userApps);
-//    }
     private void validateUser(String currentId, String principalId)
     {
         if (!currentId.equals(principalId))

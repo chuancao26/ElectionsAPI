@@ -14,4 +14,6 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long>
     Optional<Participant> findByUserAndVotingEvent(UserApp user, VotingEvent votingEvent);
     
     List<Participant> findByVotingEvent(VotingEvent votingEvent);
+    
+    List<Participant> findAllByUser(UserApp user);
 }

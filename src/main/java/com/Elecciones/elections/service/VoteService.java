@@ -7,6 +7,7 @@ import com.Elecciones.elections.domain.*;
 import com.Elecciones.elections.dto.*;
 import com.Elecciones.elections.repository.VoteRepository;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class VoteService
 {
     private final VoteRepository voteRepository;
@@ -22,13 +24,6 @@ public class VoteService
     private final ParticipantService participantService;
     private final OptionService optionService;
     
-    public VoteService(VoteRepository voteRepository, UserAppService userAppService, VotingEventService votingEventService, VotingEventService votingEventService1, ParticipantService participantService, OptionService optionService) {
-        this.voteRepository = voteRepository;
-        this.userAppService = userAppService;
-        this.votingEventService = votingEventService1;
-        this.participantService = participantService;
-        this.optionService = optionService;
-    }
     
     private VoteOut makeVoteOut(Vote vote)
     {

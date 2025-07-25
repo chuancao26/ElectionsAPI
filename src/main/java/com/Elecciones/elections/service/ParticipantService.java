@@ -29,7 +29,8 @@ public class ParticipantService
                 participant.getUser().getId(),
                 participant.getUser().getName(),
                 participant.getVotingEvent().getId(),
-                participant.getVotingEvent().getTitle()
+                participant.getVotingEvent().getTitle(),
+                participant.getVotingEvent().getStatus()
         );
     }
     private List<ParticipantOut> listParticipantOut(List<Participant> participants)
@@ -42,7 +43,8 @@ public class ParticipantService
                                 participant.getUser().getId(),
                                 participant.getUser().getName(),
                                 participant.getVotingEvent().getId(),
-                                participant.getVotingEvent().getTitle()
+                                participant.getVotingEvent().getTitle(),
+                                participant.getVotingEvent().getStatus()
                         ))
                 .toList();
     }
@@ -53,6 +55,13 @@ public class ParticipantService
                 () -> new ResourceNotFoundException("There is no participant with id: " + id)
         );
     }
+    public List<ParticipantOut> getMyParticipations(String userId)
+    {
+        UserApp user = userAppService.getUserById(userId);
+        List<Participant> participants = participantRepository.findAllByUser(user);
+        return listParticipantOut(participants);
+    }
+    
     public ParticipantOut getParticipantOutById(Long id, String userID)
     {
         Participant participant = getParticipantById(id);

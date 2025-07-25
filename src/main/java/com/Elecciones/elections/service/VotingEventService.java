@@ -10,6 +10,7 @@ import com.Elecciones.elections.dto.VotingEventInput;
 import com.Elecciones.elections.dto.VotingEventOut;
 import com.Elecciones.elections.repository.VotingEventRepository;
 
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,15 +19,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class VotingEventService {
     private final VotingEventRepository votingEventRepository;
     private final UserAppService userAppService;
-    private final Logger log = LoggerFactory.getLogger(VotingEventService.class);
-    
-    public VotingEventService(VotingEventRepository votingEventRepository, UserAppService userAppService) {
-        this.votingEventRepository = votingEventRepository;
-        this.userAppService = userAppService;
-    }
     
     private VotingEventOut makeVotingEventOut(VotingEvent votingEvent) {
         return new VotingEventOut(
@@ -158,6 +154,7 @@ public class VotingEventService {
         }
         VotingEvent votingEvent = this.getVotingEventById(eventId);
         votingEvent.setStatus(VotingEventStatus.CLOSED);
+        votingEventRepository.save(votingEvent);
     }
     public void openVotingEvent(String eventId, String creatorId)
     {
@@ -168,25 +165,8 @@ public class VotingEventService {
         
         VotingEvent votingEvent = this.getVotingEventById(eventId);
         votingEvent.setStatus(VotingEventStatus.OPENED);
+        votingEventRepository.save(votingEvent);
         
     }
     
-//    public VotingEventOut putVotingEvent(String id, VotingEventInput put, String creatorId)
-//    {
-//        VotingEvent event = this.getVotingEventById(id);
-//
-//        UserApp creator = userAppService.getUserById(creatorId);
-//
-//        VotingEvent putVotingEvent= new VotingEvent(put);
-//        putVotingEvent.setId(id);
-//        putVotingEvent.setCreatedAt(event.getCreatedAt());
-//        putVotingEvent.setCreator(creator);
-//
-//        if (putVotingEvent.getStartTime() != null && putVotingEvent.getEndTime() != null &&
-//                putVotingEvent.getStartTime().isAfter(putVotingEvent.getEndTime())) {
-//            throw new IllegalArgumentException("Start time cannot be after end time");
-//        }
-//
-//        return makeVotingEventOut(this.votingEventRepository.save(putVotingEvent));
-//    }
 }
