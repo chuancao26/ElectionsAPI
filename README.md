@@ -1,15 +1,26 @@
-### JustVote 🗳️
+# JustVote - REST API para Votaciones en Línea 🗳️
 
-## 📌 Propuesta
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.5-green)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)](https://www.postgresql.org/)
+[![OAuth2](https://img.shields.io/badge/OAuth2-Google-red)](https://developers.google.com/identity/protocols/oauth2)
 
-JustVote es un sistema web que:
+API desarrollada en **Spring Boot** que permite crear, gestionar y participar en votaciones en línea de forma segura, utilizando autenticación con Google OAuth2.
 
-- Centraliza la gestión de eventos electorales, permitiendo organizar todo tipo de votaciones, desde elecciones formales (como centros de estudiantes, consejos facultativos, etc.) hasta votaciones más informales o temáticas (como elección de sabores de helado, temas de exposición, representantes por actividad, etc.).
+## 📌 Características Principales
+- **Creación y gestión de eventos de votación** (abiertos/cerrados).
+- **Autenticación integrada con Google** (OAuth2).
+- **CRUD completo** para opciones, votos y participantes.
+- **Endpoints RESTful** con validación de permisos (solo creadores pueden modificar sus eventos).
+- **Base de datos relacional** (PostgreSQL + JPA/Hibernate).
 
-- Automatiza todo el proceso electoral, desde el registro de candidatos hasta el conteo y publicación de resultados, con generación de reportes y seguimiento del proceso.
+## 🛠️ Tecnologías
+- **Backend**: 
+  - Java 17 + Spring Boot
+  - Spring Security + OAuth2 (Google) + JWT 
+- **Base de datos**: PostgreSQL + JPA/Hibernate
+- **Gestión de dependencias**: Maven
 
-- Garantiza seguridad, transparencia y accesibilidad, asegurando que cada votación sea única, verificable y confidencial, y que cualquier usuario autorizado pueda participar desde diferentes dispositivos y ubicaciones.
-
+---
 ## 📌 Diagramas del Sistema
 
 ### ✅ Diagrama de Casos de Uso
